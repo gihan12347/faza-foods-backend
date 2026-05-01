@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Orders — Fasa Foods</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="dash-body">
+<header th:replace="~{header :: header}"></header>
+
+<div class="app-shell">
+    <aside th:replace="~{sidebar :: sidebar(active=${sidebarActive})}"></aside>
+    <main class="main-area">
+        <div class="panel">
+            <div class="panel__head">
+                <h1 class="panel__title">Orders Dashboard</h1>
+                <span class="panel__subtitle">Track, review, and update order fulfillment</span>
+            </div>
+
+            <div class="kpi-row" th:if="${ordersPage != null}">
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Total Orders</span>
+                    <strong class="kpi-card__value" th:text="${ordersPage.totalElements}">0</strong>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Current Page</span>
+                    <strong class="kpi-card__value" th:text="${currentPage + 1}">1</strong>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Filter</span>
+                    <strong class="kpi-card__value" th:text="${statusFilter != null and statusFilter != '' ? statusFilter : 'All'}">All</strong>
+                </div>
+            </div>
+
+            <p class="flash flash--ok" th:if="${flashMessage}" th:text="${flashMessage}">Saved.</p>
+            <p class="flash flash--err" th:if="${flashError}" th:text="${flashError}">Error.</p>
+
+            <form class="toolbar" th:action="@{/dashboard}" method="get" role="search" id="dashboardSearchForm">
+                <input type="hidden" name="status" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
+                <div class="search-form">
+                    <label for="order-search" class="visually-hidden">Search orders</label>
+                    <input id="order-search" type="search" name="search" th:value="${search}"
+                           placeholder="Search by order ID, district, address, product name…" autocomplete="off"/>
+                </div>
+            </form>
+
+            <p class="meta" th:if="${ordersPage != null}">
+                Showing page <span th:text="${currentPage + 1}">1</span> of
+                <span th:text="${ordersPage.totalPages > 0 ? ordersPage.totalPages : 1}">1</span>
+                · <span th:text="${ordersPage.totalElements}">0</span> orders
+            </p>
+
+            <div class="table-wrap" th:if="${orders != null and !orders.isEmpty()}">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Contact</th>
+                        <th class="th-items">Items</th>
+                        <th class="th-delivery">Delivery Type</th>
+                        <th class="th-pricing">Pricing</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td th:text="${order.id}">1</td>
+                        <td class="td-contact">
+                            <div class="order-address">
+                                <div class="order-address__line" th:if="${!#strings.isEmpty(order.addressLine1)}" th:text="${order.addressLine1}">Address line 1</div>
+                                <div class="order-address__line" th:if="${!#strings.isEmpty(order.addressLine2)}" th:text="${order.addressLine2}">Address line 2</div>
+                                <div class="order-address__district" th:if="${!#strings.isEmpty(order.district)}">
+                                    <span class="order-address__district-label">District</span>
+                                    <span class="order-address__district-value" th:text="${order.district}">Colombo</span>
+                                </div>
+                                <div class="order-address__line order-address__line--empty" th:if="${#strings.isEmpty(order.addressLine1) and #strings.isEmpty(order.addressLine2) and #strings.isEmpty(order.district)}">—</div>
+                            </div>
+                            <div class="order-contact">
+                                <a class="order-contact__link order-contact__link--whatsapp"
+                                   th:if="${!#strings.isEmpty(order.whatsappNumber)}"
+                                   th:href="|tel:${order.whatsappNumber}|"
+                                   th:text="|WhatsApp No: ${order.whatsappNumber}|">WhatsApp No: 0771234567</a>
+                                <a class="order-contact__link order-contact__link--phone"
+                                   th:if="${!#strings.isEmpty(order.otherPhoneNumber)}"
+                                   th:href="|tel:${order.otherPhoneNumber}|"
+                                   th:text="|Phone No: ${order.otherPhoneNumber}|">Phone No: 0712345678</a>
+                                <span class="order-contact__empty" th:if="${#strings.isEmpty(order.whatsappNumber) and #strings.isEmpty(order.otherPhoneNumber)}">—</span>
+                            </div>
+                        </td>
+                        <td class="td-items">
+                            <ul class="items-list" th:if="${order.items != null and !order.items.isEmpty()}">
+                                <li th:each="it : ${order.items}"
+                                    th:text="${it.name + ' × ' + it.quantity}">Item</li>
+                            </ul>
+                            <span th:if="${order.items == null or order.items.isEmpty()}">—</span>
+                            <div class="order-item-date"
+                                 th:text="${order.placedAt != null and #strings.length(order.placedAt) >= 10 ? 'Order Date: ' + #strings.substring(order.placedAt, 0, 10) : 'Order Date: —'}">
+                                Order Date: —
+                            </div>
+                        </td>
+                        <td class="td-delivery" th:text="${order.deliveryType != null ? order.deliveryType : '—'}">—</td>
+                        <td class="td-pricing">
+                            <div class="order-pricing" role="group" aria-label="Order, delivery, and total">
+                                <div class="order-pricing__row">
+                                    <span class="order-pricing__label">Order</span>
+                                    <span class="order-pricing__value" th:if="${order.orderPrice != null}"
+                                          th:text="|Rs. ${#numbers.formatDecimal(order.orderPrice, 1, 2)}|">Rs. 0</span>
+                                    <span class="order-pricing__value order-pricing__dash" th:if="${order.orderPrice == null}">—</span>
+                                </div>
+                                <div class="order-pricing__row">
+                                    <span class="order-pricing__label">Delivery</span>
+                                    <span class="order-pricing__value" th:if="${order.deliveryPrice != null}"
+                                          th:text="|Rs. ${#numbers.formatDecimal(order.deliveryPrice, 1, 2)}|">Rs. 0</span>
+                                    <span class="order-pricing__value order-pricing__dash" th:if="${order.deliveryPrice == null}">—</span>
+                                </div>
+                                <div class="order-pricing__total">
+                                    <span class="order-pricing__total-label">Total</span>
+                                    <span class="order-pricing__total-value" th:if="${order.orderPrice != null and order.deliveryPrice != null}"
+                                          th:text="|Rs. ${#numbers.formatDecimal(order.orderPrice.add(order.deliveryPrice), 1, 2)}|">Rs. 0</span>
+                                    <span class="order-pricing__total-value order-pricing__dash" th:if="${order.orderPrice == null or order.deliveryPrice == null}">—</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <form class="status-form" method="post" th:action="@{/dashboard/orders/{id}/status(id=${order.id})}">
+                                <input type="hidden" name="page" th:value="${currentPage}"/>
+                                <input type="hidden" name="size" th:value="${pageSize}"/>
+                                <input type="hidden" name="search" th:value="${search}"/>
+                                <input type="hidden" name="filterStatus" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
+                                <label class="visually-hidden" th:for="'st-' + ${order.id}">Change status for order <span th:text="${order.id}">1</span></label>
+                                <select th:id="'st-' + ${order.id}"
+                                        name="newStatus"
+                                        class="status-form__select js-status-select"
+                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber}">
+                                    <option th:each="st : ${orderStatuses}"
+                                            th:value="${st.name()}"
+                                            th:text="${st.label}"
+                                            th:selected="${order.status == st}">Pending</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="orders-cards" th:if="${orders != null and !orders.isEmpty()}">
+                <article class="order-card" th:each="order : ${orders}">
+                    <header class="order-card__head">
+                        <h3 class="order-card__title">Order #<span th:text="${order.id}">1</span></h3>
+                        <div class="order-item-date"
+                             th:text="${order.placedAt != null and #strings.length(order.placedAt) >= 10 ? 'Order Date: ' + #strings.substring(order.placedAt, 0, 10) : 'Order Date: —'}">
+                            Order Date: —
+                        </div>
+                    </header>
+
+                    <section class="order-card__section">
+                        <h4 class="order-card__label">Address</h4>
+                        <div class="order-address">
+                            <div class="order-address__line" th:if="${!#strings.isEmpty(order.addressLine1)}" th:text="${order.addressLine1}">Address line 1</div>
+                            <div class="order-address__line" th:if="${!#strings.isEmpty(order.addressLine2)}" th:text="${order.addressLine2}">Address line 2</div>
+                            <div class="order-address__district" th:if="${!#strings.isEmpty(order.district)}">
+                                <span class="order-address__district-label">District</span>
+                                <span class="order-address__district-value" th:text="${order.district}">Colombo</span>
+                            </div>
+                            <div class="order-address__line order-address__line--empty" th:if="${#strings.isEmpty(order.addressLine1) and #strings.isEmpty(order.addressLine2) and #strings.isEmpty(order.district)}">—</div>
+                        </div>
+                    </section>
+
+                    <section class="order-card__section">
+                        <h4 class="order-card__label">Items</h4>
+                        <ul class="items-list" th:if="${order.items != null and !order.items.isEmpty()}">
+                            <li th:each="it : ${order.items}" th:text="${it.name + ' × ' + it.quantity}">Item</li>
+                        </ul>
+                        <span th:if="${order.items == null or order.items.isEmpty()}">—</span>
+                    </section>
+
+                    <section class="order-card__section">
+                        <h4 class="order-card__label">Delivery Type</h4>
+                        <p class="order-card__value" th:text="${order.deliveryType != null ? order.deliveryType : '—'}">—</p>
+                    </section>
+
+                    <section class="order-card__section">
+                        <h4 class="order-card__label">Contact</h4>
+                        <div class="order-contact">
+                            <a class="order-contact__link order-contact__link--whatsapp"
+                               th:if="${!#strings.isEmpty(order.whatsappNumber)}"
+                               th:href="|tel:${order.whatsappNumber}|"
+                               th:text="|WhatsApp No: ${order.whatsappNumber}|">WhatsApp No: 0771234567</a>
+                            <a class="order-contact__link order-contact__link--phone"
+                               th:if="${!#strings.isEmpty(order.otherPhoneNumber)}"
+                               th:href="|tel:${order.otherPhoneNumber}|"
+                               th:text="|Phone No: ${order.otherPhoneNumber}|">Phone No: 0712345678</a>
+                            <span class="order-contact__empty" th:if="${#strings.isEmpty(order.whatsappNumber) and #strings.isEmpty(order.otherPhoneNumber)}">—</span>
+                        </div>
+                    </section>
+
+                    <section class="order-card__section">
+                        <h4 class="order-card__label">Pricing</h4>
+                        <div class="order-pricing" role="group" aria-label="Order, delivery, and total">
+                            <div class="order-pricing__row">
+                                <span class="order-pricing__label">Order</span>
+                                <span class="order-pricing__value" th:if="${order.orderPrice != null}"
+                                      th:text="|Rs. ${#numbers.formatDecimal(order.orderPrice, 1, 2)}|">Rs. 0</span>
+                                <span class="order-pricing__value order-pricing__dash" th:if="${order.orderPrice == null}">—</span>
+                            </div>
+                            <div class="order-pricing__row">
+                                <span class="order-pricing__label">Delivery</span>
+                                <span class="order-pricing__value" th:if="${order.deliveryPrice != null}"
+                                      th:text="|Rs. ${#numbers.formatDecimal(order.deliveryPrice, 1, 2)}|">Rs. 0</span>
+                                <span class="order-pricing__value order-pricing__dash" th:if="${order.deliveryPrice == null}">—</span>
+                            </div>
+                            <div class="order-pricing__total">
+                                <span class="order-pricing__total-label">Total</span>
+                                <span class="order-pricing__total-value" th:if="${order.orderPrice != null and order.deliveryPrice != null}"
+                                      th:text="|Rs. ${#numbers.formatDecimal(order.orderPrice.add(order.deliveryPrice), 1, 2)}|">Rs. 0</span>
+                                <span class="order-pricing__total-value order-pricing__dash" th:if="${order.orderPrice == null or order.deliveryPrice == null}">—</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="order-card__section">
+                        <h4 class="order-card__label">Status</h4>
+                        <form class="status-form" method="post" th:action="@{/dashboard/orders/{id}/status(id=${order.id})}">
+                            <input type="hidden" name="page" th:value="${currentPage}"/>
+                            <input type="hidden" name="size" th:value="${pageSize}"/>
+                            <input type="hidden" name="search" th:value="${search}"/>
+                            <input type="hidden" name="filterStatus" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
+                            <label class="visually-hidden" th:for="'m-st-' + ${order.id}">Change status for order <span th:text="${order.id}">1</span></label>
+                            <select th:id="'m-st-' + ${order.id}"
+                                    name="newStatus"
+                                    class="status-form__select js-status-select"
+                                    th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber}">
+                                <option th:each="st : ${orderStatuses}" th:value="${st.name()}" th:text="${st.label}" th:selected="${order.status == st}">Pending</option>
+                            </select>
+                        </form>
+                    </section>
+                </article>
+            </div>
+
+            <div class="empty-state" th:if="${orders == null or orders.isEmpty()}">
+                No orders found. Try changing filters or search terms.
+            </div>
+
+            <nav class="pagination" th:if="${ordersPage != null and ordersPage.totalPages > 1}" aria-label="Pagination">
+                <span class="meta">Page <span th:text="${currentPage + 1}">1</span> / <span th:text="${ordersPage.totalPages}">1</span></span>
+                <div class="pagination__links">
+                    <a th:href="@{/dashboard(page=0, size=${pageSize}, search=${search}, status=${statusFilter})}"
+                       th:classappend="${currentPage == 0} ? ' is-disabled' : ''">First</a>
+                    <a th:href="@{/dashboard(page=${currentPage - 1}, size=${pageSize}, search=${search}, status=${statusFilter})}"
+                       th:classappend="${currentPage == 0} ? ' is-disabled' : ''">Prev</a>
+                    <th:block th:each="p : ${#numbers.sequence(pageFrom, pageTo)}">
+                        <a th:href="@{/dashboard(page=${p}, size=${pageSize}, search=${search}, status=${statusFilter})}"
+                           th:text="${p + 1}"
+                           th:classappend="${p == currentPage} ? ' is-current' : ''">1</a>
+                    </th:block>
+                    <a th:href="@{/dashboard(page=${currentPage + 1}, size=${pageSize}, search=${search}, status=${statusFilter})}"
+                       th:classappend="${currentPage + 1 >= ordersPage.totalPages} ? ' is-disabled' : ''">Next</a>
+                    <a th:href="@{/dashboard(page=${ordersPage.totalPages - 1}, size=${pageSize}, search=${search}, status=${statusFilter})}"
+                       th:classappend="${currentPage + 1 >= ordersPage.totalPages} ? ' is-disabled' : ''">Last</a>
+                </div>
+            </nav>
+        </div>
+    </main>
+</div>
+
+<style>
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+</style>
+<script>
+    // Block browser back/forward navigation on authenticated pages.
+    (function () {
+        window.history.pushState(null, '', window.location.href);
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function () {
+            window.history.go(1);
+        });
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    })();
+
+    // Auto-submit status changes; open WhatsApp for PROCESSING/DELIVERED.
+    (function () {
+        function toWhatsAppPhone(phone) {
+            var digits = String(phone || '').replace(/[^\d]/g, '');
+            if (!digits) return '';
+
+            // Already international (e.g., 9477xxxxxxx)
+            if (digits.indexOf('94') === 0 && digits.length >= 11) {
+                return digits;
+            }
+
+            // Local Sri Lanka format (e.g., 0771234567 -> 94771234567)
+            if (digits.length === 10 && digits.charAt(0) === '0') {
+                return '94' + digits.substring(1);
+            }
+
+            // Fallback: return numeric-only value
+            return digits;
+        }
+
+        function buildOrderDetailsMessage(selectEl, selectedStatus) {
+            var container = selectEl.closest('tr') || selectEl.closest('.order-card');
+            var orderId = selectEl.getAttribute('data-order-id') || '';
+            var items = [];
+            if (container) {
+                container.querySelectorAll('.items-list li').forEach(function (li) {
+                    var text = (li.textContent || '').trim();
+                    if (text) items.push(text);
+                });
+            }
+
+            var totalEl = container ? container.querySelector('.order-pricing__total-value') : null;
+            var totalText = totalEl ? (totalEl.textContent || '').trim() : '';
+            var details = items.length ? items.join(', ') : 'N/A';
+            var statusLine = selectedStatus === 'DELIVERED'
+                ? 'Your order has been delivered.'
+                : 'Your order is processing.';
+
+            return statusLine + '\n'
+                + 'Order ID: ' + orderId + '\n'
+                + 'Items: ' + details + '\n'
+                + 'Total: ' + (totalText || 'N/A') + '\n'
+                + 'Thank you for ordering with Fasa Foods.';
+        }
+
+        var statusSelects = document.querySelectorAll('.js-status-select');
+        statusSelects.forEach(function (select) {
+            select.addEventListener('change', function () {
+                var form = select.form;
+                if (!form) return;
+
+                var selectedStatus = String(select.value || '').toUpperCase();
+                if (selectedStatus === 'PROCESSING' || selectedStatus === 'DELIVERED') {
+                    var rawPhone = select.getAttribute('data-whatsapp');
+                    var phone = toWhatsAppPhone(rawPhone);
+                    if (phone) {
+                        var msg = buildOrderDetailsMessage(select, selectedStatus);
+                        var encodedMsg = encodeURIComponent(msg);
+                        var desktopUrl = 'whatsapp://send?phone=' + phone + '&text=' + encodedMsg;
+                        var webUrl = 'https://wa.me/' + phone + '?text=' + encodedMsg;
+
+                        // Try WhatsApp Desktop first; fallback to web chat.
+                        window.location.href = desktopUrl;
+                        window.setTimeout(function () {
+                            window.open(webUrl, '_blank');
+                        }, 900);
+                    }
+                }
+
+                form.submit();
+            });
+        });
+
+        var searchInput = document.getElementById('order-search');
+        var searchForm = document.getElementById('dashboardSearchForm');
+        if (!searchInput || !searchForm) return;
+
+        var timer = null;
+        searchInput.addEventListener('input', function () {
+            if (timer) {
+                window.clearTimeout(timer);
+            }
+            timer = window.setTimeout(function () {
+                searchForm.submit();
+            }, 500);
+        });
+    })();
+</script>
+</body>
+</html>

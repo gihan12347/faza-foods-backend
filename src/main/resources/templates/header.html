@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="topbar" th:fragment="header">
+    <div class="topbar__inner">
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="btn btn--logout" aria-label="Logout">Logout</button>
+        </form>
+        <div class="brand" aria-label="Fasa Foods">
+            <span class="brand__mark"></span>
+            <span class="brand__text">Fasa Foods</span>
+        </div>
+    </div>
+</header>
+</body>
+</html>

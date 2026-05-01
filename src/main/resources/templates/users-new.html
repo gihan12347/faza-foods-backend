@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Create user — Fasa Foods</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="dash-body">
+<header th:replace="~{header :: header}"></header>
+
+<div class="app-shell">
+    <aside th:replace="~{sidebar :: sidebar(active=${sidebarActive})}"></aside>
+    <main class="main-area">
+        <div class="panel placeholder-card">
+            <h1 class="panel__title">Create new user</h1>
+            <p class="meta">This screen is a placeholder. Wire it to your user-management flow (form + POST) when ready.</p>
+            <a class="btn btn--primary btn--inline" th:href="@{/dashboard}">Back to orders</a>
+        </div>
+    </main>
+</div>
+<script>
+    // Block browser back/forward navigation on authenticated pages.
+    (function () {
+        window.history.pushState(null, '', window.location.href);
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function () {
+            window.history.go(1);
+        });
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    })();
+</script>
+</body>
+</html>

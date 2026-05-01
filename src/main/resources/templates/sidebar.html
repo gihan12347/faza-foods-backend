@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar (active)">
+    <div class="sidebar__title">Menu</div>
+    <nav class="sidebar__nav" aria-label="Dashboard navigation">
+        <a th:href="@{/dashboard}" class="sidebar__link" th:classappend="${active} == 'all' ? ' is-active' : ''">All orders</a>
+        <a th:href="@{/dashboard(status='PENDING')}" class="sidebar__link" th:classappend="${active} == 'pending' ? ' is-active' : ''">Pending orders</a>
+        <a th:href="@{/dashboard(status='PROCESSING')}" class="sidebar__link" th:classappend="${active} == 'processing' ? ' is-active' : ''">Processing orders</a>
+        <a th:href="@{/dashboard(status='DELIVERED')}" class="sidebar__link" th:classappend="${active} == 'delivered' ? ' is-active' : ''">Delivered orders</a>
+        <a th:href="@{/users/new}" class="sidebar__link" th:classappend="${active} == 'users' ? ' is-active' : ''">Create new user</a>
+    </nav>
+</aside>
+</body>
+</html>

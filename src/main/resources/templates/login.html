@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Login — Fasa Orders</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}"/>
+</head>
+<body class="login-body">
+<main class="login-page">
+    <section class="login-card">
+        <header class="login-header">
+            <div class="login-logo" aria-hidden="true">F</div>
+            <div>
+                <h1>Fasa Orders</h1>
+                <p>Sign in to continue</p>
+            </div>
+        </header>
+
+        <p class="login-alert login-alert--error" th:if="${param.error}">
+            Invalid username or password. Please try again.
+        </p>
+        <p class="login-alert login-alert--ok" th:if="${param.logout}">
+            You have been logged out successfully.
+        </p>
+        <p class="login-alert login-alert--error hidden" id="loginValidationError">
+            Username and password are required.
+        </p>
+
+        <form class="login-form" th:action="@{/login}" method="post" id="loginForm" novalidate>
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required/>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required/>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+    </section>
+</main>
+
+<script>
+    (function () {
+        var form = document.getElementById('loginForm');
+        var user = document.getElementById('username');
+        var pass = document.getElementById('password');
+        var validation = document.getElementById('loginValidationError');
+
+        form.addEventListener('submit', function (event) {
+            var username = user.value ? user.value.trim() : '';
+            var password = pass.value ? pass.value.trim() : '';
+            if (!username || !password) {
+                event.preventDefault();
+                validation.classList.remove('hidden');
+                if (!username) {
+                    user.focus();
+                } else {
+                    pass.focus();
+                }
+                return;
+            }
+            validation.classList.add('hidden');
+        });
+    })();
+</script>
+</body>
+</html>
