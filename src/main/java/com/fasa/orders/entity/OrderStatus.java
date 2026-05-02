@@ -3,7 +3,9 @@ package com.fasa.orders.entity;
 public enum OrderStatus {
     PENDING,
     PROCESSING,
-    DELIVERED;
+    DELIVERED,
+    DONE,
+    REJECT;
 
     public String getLabel() {
         switch (this) {
@@ -11,6 +13,10 @@ public enum OrderStatus {
                 return "Processing";
             case DELIVERED:
                 return "Delivered";
+            case DONE:
+                return "Done";
+            case REJECT:
+                return "Reject";
             default:
                 return "Pending";
         }

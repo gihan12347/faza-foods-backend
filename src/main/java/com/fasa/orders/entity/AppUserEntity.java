@@ -22,7 +22,7 @@ public class AppUserEntity {
     private String passwordHash;
 
     @Column(name = "role", nullable = false, length = 50)
-    private String role = "ADMIN";
+    private String role = "USER";
 
     @Column(name = "enabled", nullable = false)
     private boolean enabled = true;

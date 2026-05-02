@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,7 +18,7 @@ import javax.annotation.PostConstruct;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class SecurityConfig {
 
     private final AppUserDetailsService appUserDetailsService;
@@ -48,12 +49,13 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                     .antMatchers("/api/orders/**", "/health/**", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                    .antMatchers(HttpMethod.POST, "/users/create").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 .and()
                 .formLogin()
                     .loginPage("/login")
                     .failureUrl("/login?error=true")
-                    .defaultSuccessUrl("/dashboard", true)
+                    .defaultSuccessUrl("/dashboard?status=PENDING", true)
                     .permitAll()
                 .and()
                 .logout()

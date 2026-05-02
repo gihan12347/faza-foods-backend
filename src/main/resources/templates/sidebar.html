@@ -8,7 +8,9 @@
         <a th:href="@{/dashboard(status='PENDING')}" class="sidebar__link" th:classappend="${active} == 'pending' ? ' is-active' : ''">Pending orders</a>
         <a th:href="@{/dashboard(status='PROCESSING')}" class="sidebar__link" th:classappend="${active} == 'processing' ? ' is-active' : ''">Processing orders</a>
         <a th:href="@{/dashboard(status='DELIVERED')}" class="sidebar__link" th:classappend="${active} == 'delivered' ? ' is-active' : ''">Delivered orders</a>
-        <a th:href="@{/users/new}" class="sidebar__link" th:classappend="${active} == 'users' ? ' is-active' : ''">Create new user</a>
+        <a th:href="@{/dashboard(status='DONE')}" class="sidebar__link" th:classappend="${active} == 'done' ? ' is-active' : ''">Done orders</a>
+        <a th:href="@{/dashboard(status='REJECT')}" class="sidebar__link" th:classappend="${active} == 'reject' ? ' is-active' : ''">Reject orders</a>
+        <a th:href="@{/users}" class="sidebar__link" th:classappend="${active} == 'users' ? ' is-active' : ''">User management</a>
     </nav>
 </aside>
 </body>

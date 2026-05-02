@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>User management — Fasa Foods</title>
+    <link rel="icon" type="image/png" th:href="@{/images/fasa-logo.png}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="dash-body">
+<header th:replace="~{header :: header}"></header>
+
+<div class="app-shell">
+    <aside th:replace="~{sidebar :: sidebar(active=${sidebarActive})}"></aside>
+    <main class="main-area">
+        <div class="panel user-mgmt-panel">
+            <div class="panel__head">
+                <h1 class="panel__title">User management</h1>
+                <span class="panel__subtitle">Add accounts or reset passwords</span>
+            </div>
+
+            <p class="flash flash--ok" th:if="${flashMessage}" th:text="${flashMessage}">Saved.</p>
+            <p class="flash flash--err" th:if="${flashError}" th:text="${flashError}">Error.</p>
+
+            <div class="user-mgmt-grid">
+                <section class="user-mgmt-card" th:if="${isAdmin}">
+                    <h2 class="user-mgmt-card__title">Add new user</h2>
+                    <p class="user-mgmt-card__hint">Only administrators can create new accounts.</p>
+                    <form class="user-form" th:action="@{/users/create}" method="post" autocomplete="off">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="user-form__field">
+                            <label for="new-username">Username</label>
+                            <input id="new-username" name="username" type="text" required maxlength="100" autocomplete="off"/>
+                        </div>
+                        <div class="user-form__field">
+                            <label for="new-role">Role</label>
+                            <select id="new-role" name="role" class="user-form__select" required>
+                                <option value="USER" selected>User</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                        <div class="user-form__field">
+                            <label for="new-password">Password</label>
+                            <input id="new-password" name="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password"/>
+                            <span class="user-form__help">At least 8 characters.</span>
+                        </div>
+                        <button type="submit" class="btn btn--primary">Create user</button>
+                    </form>
+                </section>
+
+                <section class="user-mgmt-card">
+                    <h2 class="user-mgmt-card__title">Reset password</h2>
+                    <p class="user-mgmt-card__hint" th:if="${isAdmin}">Choose a user, enter that account's current password, then set a new password.</p>
+                    <p class="user-mgmt-card__hint" th:if="${!isAdmin}">Enter your current password, then choose a new one for <strong th:text="${currentUsername}">user</strong>.</p>
+                    <form class="user-form" th:action="@{/users/reset-password}" method="post" autocomplete="off">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="user-form__field" th:if="${isAdmin}">
+                            <label for="reset-target">User</label>
+                            <select id="reset-target" name="targetUsername" class="user-form__select" required>
+                                <option value="" disabled selected>Select user…</option>
+                                <option th:each="u : ${usernames}" th:value="${u}" th:text="${u}">user</option>
+                            </select>
+                        </div>
+                        <div class="user-form__field" th:if="${!isAdmin}">
+                            <label for="reset-self">Account</label>
+                            <input id="reset-self" type="text" readonly class="user-form__readonly" th:value="${currentUsername}" aria-label="Your username"/>
+                            <input type="hidden" name="targetUsername" th:value="${currentUsername}"/>
+                        </div>
+                        <div class="user-form__field">
+                            <label for="reset-current-password">Current password</label>
+                            <input id="reset-current-password" name="currentPassword" type="password" required maxlength="128" autocomplete="current-password"/>
+                        </div>
+                        <div class="user-form__field">
+                            <label for="reset-password">New password</label>
+                            <input id="reset-password" name="newPassword" type="password" required minlength="8" maxlength="128" autocomplete="new-password"/>
+                            <span class="user-form__help">At least 8 characters.</span>
+                        </div>
+                        <button type="submit" class="btn btn--primary">Update password</button>
+                    </form>
+                </section>
+            </div>
+
+            <p class="user-mgmt-footer">
+                <a class="btn btn--inline" th:href="@{/dashboard}">Back to orders</a>
+            </p>
+        </div>
+    </main>
+</div>
+<script>
+    (function () {
+        window.history.pushState(null, '', window.location.href);
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function () {
+            window.history.go(1);
+        });
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    })();
+</script>
+</body>
+</html>

@@ -108,6 +108,12 @@ public class DashboardController {
             if (s == OrderStatus.DELIVERED) {
                 return "delivered";
             }
+            if (s == OrderStatus.DONE) {
+                return "done";
+            }
+            if (s == OrderStatus.REJECT) {
+                return "reject";
+            }
         } catch (IllegalArgumentException ignored) {
             // legacy DB value e.g. COMPLETED — treat as no sidebar match
         }
