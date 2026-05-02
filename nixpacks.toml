@@ -1,0 +1,10 @@
+# Railway / Nixpacks: Java 8 to align with local JDK 8.
+[variables]
+NIXPACKS_JDK_VERSION = "8"
+
+# chmod avoids "./gradlew: Permission denied" on Linux.
+[phases.build]
+cmds = ["chmod +x gradlew", "./gradlew clean bootJar -x test -x check --no-daemon -Pproduction"]
+
+[start]
+cmd = "java -Dserver.port=${PORT:-8080} -jar build/libs/application.jar"

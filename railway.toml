@@ -1,0 +1,5 @@
+# Prefer Docker so the build matches local `./gradlew` and JDK 17.
+# In Railway: set the service Root Directory to this folder (`fasa-orders-api`) if the repo is a monorepo.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
