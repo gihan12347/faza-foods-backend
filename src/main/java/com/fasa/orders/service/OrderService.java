@@ -44,7 +44,7 @@ public class OrderService {
         Pageable pageable = PageRequest.of(
                 Math.max(0, page),
                 Math.min(50, Math.max(1, size)),
-                Sort.by(Sort.Direction.DESC, "createdAt")
+                Sort.by(Sort.Direction.ASC, "createdAt")
         );
         return orderRepository.findAll(spec, pageable);
     }

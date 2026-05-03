@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Orders — Fasa Foods</title>
+    <title>Orders - Fasa Products</title>
     <link rel="icon" type="image/png" th:href="@{/images/fasa-logo.png}"/>
     <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
 </head>
@@ -335,8 +335,8 @@
             return statusLine + '\n'
                 + 'Order ID: ' + orderId + '\n'
                 + 'Items: ' + details + '\n'
-                + 'Total: ' + (totalText || 'N/A') + '\n'
-                + 'Thank you for ordering with Fasa Foods.';
+                + 'Total: ' + (totalText || 'N/A') + '\n\n'
+                + 'Thank you for ordering with Fasa products.';
         }
 
         var statusSelects = document.querySelectorAll('.js-status-select');
