@@ -35,7 +35,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
         OrderEntity savedOrder = orderService.saveOrder(request);
-        String message = "Order submitted successfully. Order ID: " + savedOrder.getId();
+        String message = "Order submitted successfully & we will notify you soon. Your Order ID: " + savedOrder.getId();
         return ResponseEntity.ok(new OrderResponse("SUCCESS", message));
     }
 }
