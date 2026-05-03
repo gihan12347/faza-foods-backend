@@ -43,6 +43,7 @@
                     <label for="order-search" class="visually-hidden">Search orders</label>
                     <input id="order-search" type="search" name="search" th:value="${search}"
                            placeholder="Search by order ID, customer name, district, address, product name…" autocomplete="off"/>
+                    <button type="submit" class="btn btn--primary search-form__submit">Search</button>
                 </div>
             </form>
 
@@ -377,19 +378,7 @@
             });
         });
 
-        var searchInput = document.getElementById('order-search');
-        var searchForm = document.getElementById('dashboardSearchForm');
-        if (!searchInput || !searchForm) return;
-
-        var timer = null;
-        searchInput.addEventListener('input', function () {
-            if (timer) {
-                window.clearTimeout(timer);
-            }
-            timer = window.setTimeout(function () {
-                searchForm.submit();
-            }, 500);
-        });
+        /* Order search: submit only via Enter or the Search button (no search-while-typing). */
     })();
 </script>
 </body>

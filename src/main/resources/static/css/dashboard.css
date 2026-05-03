@@ -271,6 +271,12 @@ body.dash-body {
   border-color: var(--primary-mid);
 }
 
+.search-form__submit {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0 1rem;
+}
+
 .btn--primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%);
   color: #fff;
