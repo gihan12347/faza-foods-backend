@@ -138,7 +138,7 @@
                                 <select th:id="'st-' + ${order.id}"
                                         name="newStatus"
                                         class="status-form__select js-status-select"
-                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName}">
+                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName},data-delivery-type=${order.deliveryType}">
                                     <option th:each="st : ${orderStatuses}"
                                             th:value="${st.name()}"
                                             th:text="${st.label}"
@@ -241,7 +241,7 @@
                             <select th:id="'m-st-' + ${order.id}"
                                     name="newStatus"
                                     class="status-form__select js-status-select"
-                                    th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName}">
+                                    th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName},data-delivery-type=${order.deliveryType}">
                                 <option th:each="st : ${orderStatuses}" th:value="${st.name()}" th:text="${st.label}" th:selected="${order.status == st}">Pending</option>
                             </select>
                         </form>
@@ -288,6 +288,11 @@
         border: 0;
     }
 </style>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.FASA_COURIER_PROCESSING_BANK_WHATSAPP = /*[[${courierProcessingBankWhatsAppBlock}]]*/ '';
+    /*]]>*/
+</script>
 <script>
     // Block browser back/forward navigation on authenticated pages.
     (function () {
@@ -323,6 +328,10 @@
             return digits;
         }
 
+        function isCourierDeliveryType(raw) {
+            return String(raw || '').trim().toLowerCase() === 'courier';
+        }
+
         function buildOrderDetailsMessage(selectEl, selectedStatus) {
             var container = selectEl.closest('tr') || selectEl.closest('.order-card');
             var orderId = selectEl.getAttribute('data-order-id') || '';
@@ -342,12 +351,22 @@
                 : 'Your order is processing.';
             var customerName = String(selectEl.getAttribute('data-customer-name') || '').trim();
 
-            return statusLine + '\n'
+            var core = statusLine + '\n'
                 + 'Order ID: ' + orderId + '\n'
                 + (customerName ? 'Customer: ' + customerName + '\n' : '')
                 + 'Items: ' + details + '\n'
-                + 'Total: ' + (totalText || 'N/A') + '\n\n'
-                + 'Thank you for ordering with Fasa products.';
+                + 'Total: ' + (totalText || 'N/A') + '\n';
+
+            if (selectedStatus === 'PROCESSING' && isCourierDeliveryType(selectEl.getAttribute('data-delivery-type'))) {
+                var bank = typeof window.FASA_COURIER_PROCESSING_BANK_WHATSAPP === 'string'
+                    ? window.FASA_COURIER_PROCESSING_BANK_WHATSAPP.trim()
+                    : '';
+                if (bank) {
+                    core += '\n' + bank + '\n';
+                }
+            }
+
+            return core + '\nThank you for ordering with Fasa products.';
         }
 
         var statusSelects = document.querySelectorAll('.js-status-select');

@@ -3,6 +3,7 @@ package com.fasa.orders.controller;
 import com.fasa.orders.entity.OrderEntity;
 import com.fasa.orders.entity.OrderStatus;
 import com.fasa.orders.service.OrderService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,9 +21,41 @@ import java.util.Optional;
 public class DashboardController {
 
     private final OrderService orderService;
+    private final String courierProcessingBankWhatsAppBlock;
 
-    public DashboardController(OrderService orderService) {
+    public DashboardController(
+            OrderService orderService,
+            @Value("${fasa.orders.bank.account-name:I.F. Fasana}") String bankAccountName,
+            @Value("${fasa.orders.bank.account-number:94089358}") String bankAccountNumber,
+            @Value("${fasa.orders.bank.bank-label:Bank of Ceylon (BOC)}") String bankLabel,
+            @Value("${fasa.orders.bank.branch:Ibbagamuwa}") String bankBranch) {
         this.orderService = orderService;
+        this.courierProcessingBankWhatsAppBlock =
+                buildCourierProcessingBankWhatsAppBlock(bankAccountName, bankAccountNumber, bankLabel, bankBranch);
+    }
+
+    private static String buildCourierProcessingBankWhatsAppBlock(
+            String accountName, String accountNumber, String bankLabel, String branch) {
+        String name = trimToEmpty(accountName);
+        String number = trimToEmpty(accountNumber);
+        String bank = trimToEmpty(bankLabel);
+        String br = trimToEmpty(branch);
+        StringBuilder sb = new StringBuilder(320);
+        sb.append("---\n");
+        sb.append("Payment (courier — bank transfer)\n\n");
+        sb.append("Account name: ").append(name).append('\n');
+        sb.append("Account number: ").append(number).append('\n');
+        sb.append("Bank: ").append(bank).append('\n');
+        sb.append("Branch: ").append(br).append('\n');
+        sb.append('\n');
+        sb.append("Please transfer the total amount shown above. Use your Order ID as the payment reference ");
+        sb.append("if your bank allows a remark or note.\n");
+        sb.append("---");
+        return sb.toString();
+    }
+
+    private static String trimToEmpty(String s) {
+        return s == null ? "" : s.trim();
     }
 
     @GetMapping("/dashboard")
@@ -44,6 +77,7 @@ public class DashboardController {
         model.addAttribute("statusFilter", statusValue);
         model.addAttribute("sidebarActive", resolveSidebarActive(status));
         model.addAttribute("orderStatuses", OrderStatus.values());
+        model.addAttribute("courierProcessingBankWhatsAppBlock", courierProcessingBankWhatsAppBlock);
 
         int totalPages = ordersPage.getTotalPages();
         int current = ordersPage.getNumber();
