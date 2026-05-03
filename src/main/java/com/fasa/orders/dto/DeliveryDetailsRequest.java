@@ -1,6 +1,13 @@
 package com.fasa.orders.dto;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 public class DeliveryDetailsRequest {
+
+    @NotBlank(message = "Customer name is required")
+    @Size(min = 2, max = 120, message = "Customer name must be between 2 and 120 characters")
+    private String customerName;
 
     private String deliveryType;
     private String addressLine1;
@@ -15,6 +22,14 @@ public class DeliveryDetailsRequest {
 
     public void setDeliveryType(String deliveryType) {
         this.deliveryType = deliveryType;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
     public String getAddressLine1() {

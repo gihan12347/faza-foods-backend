@@ -16,7 +16,7 @@
         <div class="panel user-mgmt-panel">
             <div class="panel__head">
                 <h1 class="panel__title">User management</h1>
-                <span class="panel__subtitle">Add accounts or reset passwords</span>
+                <span class="panel__subtitle">Add accounts (admin) or change your password</span>
             </div>
 
             <p class="flash flash--ok" th:if="${flashMessage}" th:text="${flashMessage}">Saved.</p>
@@ -49,22 +49,13 @@
                 </section>
 
                 <section class="user-mgmt-card">
-                    <h2 class="user-mgmt-card__title">Reset password</h2>
-                    <p class="user-mgmt-card__hint" th:if="${isAdmin}">Choose a user, enter that account's current password, then set a new password.</p>
-                    <p class="user-mgmt-card__hint" th:if="${!isAdmin}">Enter your current password, then choose a new one for <strong th:text="${currentUsername}">user</strong>.</p>
+                    <h2 class="user-mgmt-card__title">Change password</h2>
+                    <p class="user-mgmt-card__hint">You can only change the password for the account you are logged in as (<strong th:text="${currentUsername}">user</strong>). Enter your current password, then your new password.</p>
                     <form class="user-form" th:action="@{/users/reset-password}" method="post" autocomplete="off">
                         <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <div class="user-form__field" th:if="${isAdmin}">
-                            <label for="reset-target">User</label>
-                            <select id="reset-target" name="targetUsername" class="user-form__select" required>
-                                <option value="" disabled selected>Select user…</option>
-                                <option th:each="u : ${usernames}" th:value="${u}" th:text="${u}">user</option>
-                            </select>
-                        </div>
-                        <div class="user-form__field" th:if="${!isAdmin}">
+                        <div class="user-form__field">
                             <label for="reset-self">Account</label>
                             <input id="reset-self" type="text" readonly class="user-form__readonly" th:value="${currentUsername}" aria-label="Your username"/>
-                            <input type="hidden" name="targetUsername" th:value="${currentUsername}"/>
                         </div>
                         <div class="user-form__field">
                             <label for="reset-current-password">Current password</label>

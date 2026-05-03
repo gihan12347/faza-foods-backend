@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Collections;
-
 @Controller
 public class UserAdminController {
 
@@ -32,9 +30,6 @@ public class UserAdminController {
         model.addAttribute("sidebarActive", "users");
         boolean admin = isAdmin(authentication);
         model.addAttribute("isAdmin", admin);
-        model.addAttribute(
-                "usernames",
-                admin ? appUserAdminService.listUsernamesOrdered() : Collections.emptyList());
         model.addAttribute("currentUsername", authentication != null ? authentication.getName() : "");
         return "users-manage";
     }
@@ -57,15 +52,13 @@ public class UserAdminController {
 
     @PostMapping("/users/reset-password")
     public String resetPassword(
-            @RequestParam String targetUsername,
             @RequestParam String currentPassword,
             @RequestParam String newPassword,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
-        boolean admin = isAdmin(authentication);
         String actor = authentication != null ? authentication.getName() : "";
         try {
-            appUserAdminService.resetPassword(actor, admin, targetUsername, currentPassword, newPassword);
+            appUserAdminService.changeOwnPassword(actor, currentPassword, newPassword);
             redirectAttributes.addFlashAttribute("flashMessage", "Password updated successfully.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("flashError", ex.getMessage());

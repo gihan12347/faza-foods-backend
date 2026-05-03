@@ -26,6 +26,9 @@ public class OrderEntity {
     @Column(name = "placed_at")
     private String placedAt;
 
+    @Column(name = "customer_name", length = 120)
+    private String customerName;
+
     @Column(name = "delivery_type")
     private String deliveryType;
 
@@ -89,6 +92,14 @@ public class OrderEntity {
 
     public void setPlacedAt(String placedAt) {
         this.placedAt = placedAt;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
     public String getDeliveryType() {

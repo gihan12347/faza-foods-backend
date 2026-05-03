@@ -2,16 +2,13 @@ package com.fasa.orders.service;
 
 import com.fasa.orders.entity.AppUserEntity;
 import com.fasa.orders.repository.AppUserRepository;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class AppUserAdminService {
@@ -24,13 +21,6 @@ public class AppUserAdminService {
     public AppUserAdminService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    @Transactional(readOnly = true)
-    public List<String> listUsernamesOrdered() {
-        return appUserRepository.findAll(Sort.by("username")).stream()
-                .map(AppUserEntity::getUsername)
-                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -55,19 +45,14 @@ public class AppUserAdminService {
         appUserRepository.save(user);
     }
 
+    /**
+     * Change password for the currently authenticated account only (not other users).
+     */
     @Transactional
-    public void resetPassword(
-            String actorUsername,
-            boolean actorIsAdmin,
-            String targetUsernameRaw,
-            String currentPasswordRaw,
-            String newPasswordRaw) {
-        String target = normalizeUsername(targetUsernameRaw);
+    public void changeOwnPassword(String actorUsername, String currentPasswordRaw, String newPasswordRaw) {
+        String target = normalizeUsername(actorUsername);
         if (target.isEmpty()) {
-            throw new IllegalArgumentException("Username is required.");
-        }
-        if (!actorIsAdmin && !target.equalsIgnoreCase(normalizeUsername(actorUsername))) {
-            throw new IllegalArgumentException("You can only reset your own password.");
+            throw new IllegalArgumentException("Not authenticated.");
         }
         AppUserEntity user = appUserRepository.findByUsername(target)
                 .orElseThrow(() -> new IllegalArgumentException("User not found."));

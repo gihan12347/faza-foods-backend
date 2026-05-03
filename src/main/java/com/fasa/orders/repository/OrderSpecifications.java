@@ -38,6 +38,7 @@ public final class OrderSpecifications {
 
             List<Predicate> predicates = new ArrayList<Predicate>();
             predicates.add(cb.like(cb.lower(cb.coalesce(root.get("district"), cb.literal(""))), like));
+            predicates.add(cb.like(cb.lower(cb.coalesce(root.get("customerName"), cb.literal(""))), like));
             predicates.add(cb.like(cb.lower(cb.coalesce(root.get("addressLine1"), cb.literal(""))), like));
             predicates.add(cb.like(cb.lower(cb.coalesce(root.get("addressLine2"), cb.literal(""))), like));
             predicates.add(cb.like(cb.lower(cb.coalesce(root.get("orderSource"), cb.literal(""))), like));

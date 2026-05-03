@@ -72,6 +72,7 @@ public class OrderService {
 
         DeliveryDetailsRequest details = request.getDeliveryDetails();
         if (details != null) {
+            order.setCustomerName(details.getCustomerName());
             order.setDeliveryType(details.getDeliveryType());
             order.setAddressLine1(details.getAddressLine1());
             order.setAddressLine2(details.getAddressLine2());

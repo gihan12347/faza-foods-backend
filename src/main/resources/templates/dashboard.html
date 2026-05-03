@@ -42,7 +42,7 @@
                 <div class="search-form">
                     <label for="order-search" class="visually-hidden">Search orders</label>
                     <input id="order-search" type="search" name="search" th:value="${search}"
-                           placeholder="Search by order ID, district, address, product name…" autocomplete="off"/>
+                           placeholder="Search by order ID, customer name, district, address, product name…" autocomplete="off"/>
                 </div>
             </form>
 
@@ -68,6 +68,10 @@
                     <tr th:each="order : ${orders}">
                         <td th:text="${order.id}">1</td>
                         <td class="td-contact">
+                            <div class="order-customer-name" th:if="${!#strings.isEmpty(order.customerName)}">
+                                <span class="order-customer-name__label">Customer</span>
+                                <span class="order-customer-name__value" th:text="${order.customerName}">Name</span>
+                            </div>
                             <div class="order-address">
                                 <div class="order-address__line" th:if="${!#strings.isEmpty(order.addressLine1)}" th:text="${order.addressLine1}">Address line 1</div>
                                 <div class="order-address__line" th:if="${!#strings.isEmpty(order.addressLine2)}" th:text="${order.addressLine2}">Address line 2</div>
@@ -133,7 +137,7 @@
                                 <select th:id="'st-' + ${order.id}"
                                         name="newStatus"
                                         class="status-form__select js-status-select"
-                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber}">
+                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName}">
                                     <option th:each="st : ${orderStatuses}"
                                             th:value="${st.name()}"
                                             th:text="${st.label}"
@@ -184,6 +188,10 @@
 
                     <section class="order-card__section">
                         <h4 class="order-card__label">Contact</h4>
+                        <p class="order-card__customer-name" th:if="${!#strings.isEmpty(order.customerName)}">
+                            <span class="order-card__customer-label">Name</span>
+                            <span class="order-card__customer-value" th:text="${order.customerName}">Customer</span>
+                        </p>
                         <div class="order-contact">
                             <a class="order-contact__link order-contact__link--whatsapp"
                                th:if="${!#strings.isEmpty(order.whatsappNumber)}"
@@ -232,7 +240,7 @@
                             <select th:id="'m-st-' + ${order.id}"
                                     name="newStatus"
                                     class="status-form__select js-status-select"
-                                    th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber}">
+                                    th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName}">
                                 <option th:each="st : ${orderStatuses}" th:value="${st.name()}" th:text="${st.label}" th:selected="${order.status == st}">Pending</option>
                             </select>
                         </form>
@@ -331,9 +339,11 @@
             var statusLine = selectedStatus === 'DELIVERED'
                 ? 'Your order has been delivered.'
                 : 'Your order is processing.';
+            var customerName = String(selectEl.getAttribute('data-customer-name') || '').trim();
 
             return statusLine + '\n'
                 + 'Order ID: ' + orderId + '\n'
+                + (customerName ? 'Customer: ' + customerName + '\n' : '')
                 + 'Items: ' + details + '\n'
                 + 'Total: ' + (totalText || 'N/A') + '\n\n'
                 + 'Thank you for ordering with Fasa products.';
