@@ -129,22 +129,30 @@
                             </div>
                         </td>
                         <td>
-                            <form class="status-form" method="post" th:action="@{/dashboard/orders/{id}/status(id=${order.id})}">
-                                <input type="hidden" name="page" th:value="${currentPage}"/>
-                                <input type="hidden" name="size" th:value="${pageSize}"/>
-                                <input type="hidden" name="search" th:value="${search}"/>
-                                <input type="hidden" name="filterStatus" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
-                                <label class="visually-hidden" th:for="'st-' + ${order.id}">Change status for order <span th:text="${order.id}">1</span></label>
-                                <select th:id="'st-' + ${order.id}"
-                                        name="newStatus"
-                                        class="status-form__select js-status-select"
-                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName},data-delivery-type=${order.deliveryType}">
-                                    <option th:each="st : ${orderStatuses}"
-                                            th:value="${st.name()}"
-                                            th:text="${st.label}"
-                                            th:selected="${order.status == st}">Pending</option>
-                                </select>
-                            </form>
+                            <div class="status-cell-stack">
+                                <form class="status-form" method="post" th:action="@{/dashboard/orders/{id}/status(id=${order.id})}">
+                                    <input type="hidden" name="page" th:value="${currentPage}"/>
+                                    <input type="hidden" name="size" th:value="${pageSize}"/>
+                                    <input type="hidden" name="search" th:value="${search}"/>
+                                    <input type="hidden" name="filterStatus" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
+                                    <label class="visually-hidden" th:for="'st-' + ${order.id}">Change status for order <span th:text="${order.id}">1</span></label>
+                                    <select th:id="'st-' + ${order.id}"
+                                            name="newStatus"
+                                            class="status-form__select js-status-select"
+                                            th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName},data-delivery-type=${order.deliveryType},data-other-phone=${order.otherPhoneNumber},data-address-line1=${order.addressLine1},data-address-line2=${order.addressLine2},data-district=${order.district}">
+                                        <option th:each="st : ${orderStatuses}"
+                                                th:value="${st.name()}"
+                                                th:text="${st.label}"
+                                                th:selected="${order.status == st}">Pending</option>
+                                    </select>
+                                </form>
+                                <button type="button"
+                                        class="btn btn--outline btn--sm js-print-slip-btn"
+                                        th:if="${order.status != null and order.status.name() == 'PROCESSING'}"
+                                        th:aria-label="|Copy slip for order ${order.id}|">
+                                    Copy slip
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     </tbody>
@@ -232,19 +240,27 @@
 
                     <section class="order-card__section">
                         <h4 class="order-card__label">Status</h4>
-                        <form class="status-form" method="post" th:action="@{/dashboard/orders/{id}/status(id=${order.id})}">
-                            <input type="hidden" name="page" th:value="${currentPage}"/>
-                            <input type="hidden" name="size" th:value="${pageSize}"/>
-                            <input type="hidden" name="search" th:value="${search}"/>
-                            <input type="hidden" name="filterStatus" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
-                            <label class="visually-hidden" th:for="'m-st-' + ${order.id}">Change status for order <span th:text="${order.id}">1</span></label>
-                            <select th:id="'m-st-' + ${order.id}"
-                                    name="newStatus"
-                                    class="status-form__select js-status-select"
-                                    th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName},data-delivery-type=${order.deliveryType}">
-                                <option th:each="st : ${orderStatuses}" th:value="${st.name()}" th:text="${st.label}" th:selected="${order.status == st}">Pending</option>
-                            </select>
-                        </form>
+                        <div class="status-cell-stack">
+                            <form class="status-form" method="post" th:action="@{/dashboard/orders/{id}/status(id=${order.id})}">
+                                <input type="hidden" name="page" th:value="${currentPage}"/>
+                                <input type="hidden" name="size" th:value="${pageSize}"/>
+                                <input type="hidden" name="search" th:value="${search}"/>
+                                <input type="hidden" name="filterStatus" th:value="${statusFilter}" th:if="${statusFilter != null and statusFilter != ''}"/>
+                                <label class="visually-hidden" th:for="'m-st-' + ${order.id}">Change status for order <span th:text="${order.id}">1</span></label>
+                                <select th:id="'m-st-' + ${order.id}"
+                                        name="newStatus"
+                                        class="status-form__select js-status-select"
+                                        th:attr="data-order-id=${order.id},data-whatsapp=${order.whatsappNumber},data-customer-name=${order.customerName},data-delivery-type=${order.deliveryType},data-other-phone=${order.otherPhoneNumber},data-address-line1=${order.addressLine1},data-address-line2=${order.addressLine2},data-district=${order.district}">
+                                    <option th:each="st : ${orderStatuses}" th:value="${st.name()}" th:text="${st.label}" th:selected="${order.status == st}">Pending</option>
+                                </select>
+                            </form>
+                            <button type="button"
+                                    class="btn btn--outline btn--sm js-print-slip-btn"
+                                    th:if="${order.status != null and order.status.name() == 'PROCESSING'}"
+                                    th:aria-label="|Copy slip for order ${order.id}|">
+                                Copy slip
+                            </button>
+                        </div>
                     </section>
                 </article>
             </div>
@@ -308,7 +324,7 @@
         });
     })();
 
-    // Auto-submit status changes; open WhatsApp for PROCESSING/DELIVERED.
+    // Auto-submit status changes; open WhatsApp for PROCESSING/DELIVERED; copy slip (processing only).
     (function () {
         function toWhatsAppPhone(phone) {
             var digits = String(phone || '').replace(/[^\d]/g, '');
@@ -332,32 +348,47 @@
             return String(raw || '').trim().toLowerCase() === 'courier';
         }
 
-        function buildOrderDetailsMessage(selectEl, selectedStatus) {
-            var container = selectEl.closest('tr') || selectEl.closest('.order-card');
-            var orderId = selectEl.getAttribute('data-order-id') || '';
+        function collectItemsFromContainer(container) {
             var items = [];
-            if (container) {
-                container.querySelectorAll('.items-list li').forEach(function (li) {
-                    var text = (li.textContent || '').trim();
-                    if (text) items.push(text);
-                });
-            }
+            if (!container) return items;
+            container.querySelectorAll('.items-list li').forEach(function (li) {
+                var text = (li.textContent || '').trim();
+                if (text) items.push(text);
+            });
+            return items;
+        }
 
+        function getOrderContextFromSelect(selectEl) {
+            var container = selectEl.closest('tr') || selectEl.closest('.order-card');
             var totalEl = container ? container.querySelector('.order-pricing__total-value') : null;
             var totalText = totalEl ? (totalEl.textContent || '').trim() : '';
+            return {
+                container: container,
+                orderId: String(selectEl.getAttribute('data-order-id') || '').trim(),
+                customerName: String(selectEl.getAttribute('data-customer-name') || '').trim(),
+                deliveryType: selectEl.getAttribute('data-delivery-type'),
+                items: collectItemsFromContainer(container),
+                totalText: totalText
+            };
+        }
+
+        /** Same text used for WhatsApp when moving to PROCESSING / DELIVERED (no extra server data). */
+        function buildOrderDetailsMessage(selectedStatus, ctx) {
+            var orderId = ctx.orderId || '';
+            var items = ctx.items || [];
             var details = items.length ? items.join(', ') : 'N/A';
             var statusLine = selectedStatus === 'DELIVERED'
                 ? 'Your order has been delivered.'
                 : 'Your order is processing.';
-            var customerName = String(selectEl.getAttribute('data-customer-name') || '').trim();
+            var customerName = ctx.customerName || '';
 
             var core = statusLine + '\n'
                 + 'Order ID: ' + orderId + '\n'
                 + (customerName ? 'Customer: ' + customerName + '\n' : '')
                 + 'Items: ' + details + '\n'
-                + 'Total: ' + (totalText || 'N/A') + '\n';
+                + 'Total: ' + (ctx.totalText || 'N/A') + '\n';
 
-            if (selectedStatus === 'PROCESSING' && isCourierDeliveryType(selectEl.getAttribute('data-delivery-type'))) {
+            if (selectedStatus === 'PROCESSING' && isCourierDeliveryType(ctx.deliveryType)) {
                 var bank = typeof window.FASA_COURIER_PROCESSING_BANK_WHATSAPP === 'string'
                     ? window.FASA_COURIER_PROCESSING_BANK_WHATSAPP.trim()
                     : '';
@@ -368,6 +399,98 @@
 
             return core + '\nThank you for ordering with Fasa products.';
         }
+
+        function dashIfEmpty(value) {
+            var t = String(value || '').trim();
+            return t ? t : '—';
+        }
+
+        function buildAddressLines(selectEl) {
+            function g(name) {
+                return String(selectEl.getAttribute(name) || '').trim();
+            }
+            var a1 = g('data-address-line1');
+            var a2 = g('data-address-line2');
+            var d = g('data-district');
+            var lines = [];
+            if (a1) lines.push(a1);
+            if (a2) lines.push(a2);
+            if (d) lines.push('District: ' + d);
+            return lines.length ? lines.join('\n') : '—';
+        }
+
+        function copyTextToClipboard(text) {
+            var t = String(text || '');
+            if (!t) return Promise.reject(new Error('Nothing to copy'));
+
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(t);
+            }
+
+            return new Promise(function (resolve, reject) {
+                try {
+                    var ta = document.createElement('textarea');
+                    ta.value = t;
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    ta.style.top = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    var ok = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    ok ? resolve() : reject(new Error('Copy failed'));
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        function buildSlipCopyText(selectEl) {
+            // Intentionally no logo; copy only slip text values from the current order.
+            var orderId = String(selectEl.getAttribute('data-order-id') || '').trim();
+            var name = dashIfEmpty(selectEl.getAttribute('data-customer-name'));
+            var address = buildAddressLines(selectEl);
+            var whatsapp = dashIfEmpty(selectEl.getAttribute('data-whatsapp'));
+            var phone = dashIfEmpty(selectEl.getAttribute('data-other-phone'));
+
+            var lines = [];
+            lines.push('Order #' + (orderId || '—'));
+            if (name && name !== '—') lines.push(name);
+            if (address && address !== '—') lines.push(address);
+            if (whatsapp && whatsapp !== '—') lines.push(whatsapp);
+            if (phone && phone !== '—') lines.push(phone);
+
+            return lines.join('\n');
+        }
+
+        document.querySelectorAll('.js-print-slip-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var stack = btn.closest('.status-cell-stack');
+                var select = stack ? stack.querySelector('.js-status-select') : null;
+                if (!select) return;
+                var originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Copying...';
+
+                copyTextToClipboard(buildSlipCopyText(select))
+                    .then(function () {
+                        btn.textContent = 'Copied';
+                        window.setTimeout(function () {
+                            btn.disabled = false;
+                            btn.textContent = originalText;
+                        }, 900);
+                    })
+                    .catch(function () {
+                        btn.textContent = 'Copy failed';
+                        window.setTimeout(function () {
+                            btn.disabled = false;
+                            btn.textContent = originalText;
+                        }, 1200);
+                    });
+            });
+        });
 
         var statusSelects = document.querySelectorAll('.js-status-select');
         statusSelects.forEach(function (select) {
@@ -380,7 +503,8 @@
                     var rawPhone = select.getAttribute('data-whatsapp');
                     var phone = toWhatsAppPhone(rawPhone);
                     if (phone) {
-                        var msg = buildOrderDetailsMessage(select, selectedStatus);
+                        var ctx = getOrderContextFromSelect(select);
+                        var msg = buildOrderDetailsMessage(selectedStatus, ctx);
                         var encodedMsg = encodeURIComponent(msg);
                         var desktopUrl = 'whatsapp://send?phone=' + phone + '&text=' + encodedMsg;
                         var webUrl = 'https://wa.me/' + phone + '?text=' + encodedMsg;

@@ -287,6 +287,20 @@ body.dash-body {
   box-shadow: 0 6px 18px rgba(30, 74, 36, 0.22);
 }
 
+.btn--outline {
+  background: #ffffff;
+  color: var(--primary);
+  border: 1px solid rgba(30, 74, 36, 0.28);
+  min-height: 44px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+.btn--outline:hover {
+  background: var(--accent-soft);
+  border-color: rgba(30, 74, 36, 0.4);
+  box-shadow: 0 4px 14px rgba(30, 74, 36, 0.1);
+}
+
 a.btn--inline {
   margin-top: 0.75rem;
   text-decoration: none;
@@ -1469,3 +1483,17 @@ body.dash-body {
   color: #23395f;
   font-weight: 600;
 }
+
+/* Status column: dropdown + optional print slip (processing only) */
+.status-cell-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.status-cell-stack .status-form {
+  width: 100%;
+}
+
