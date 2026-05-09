@@ -449,6 +449,7 @@
 
         function buildSlipCopyText(selectEl) {
             // Intentionally no logo; copy only slip text values from the current order.
+            var ctx = getOrderContextFromSelect(selectEl);
             var orderId = String(selectEl.getAttribute('data-order-id') || '').trim();
             var name = dashIfEmpty(selectEl.getAttribute('data-customer-name'));
             var address = buildAddressLines(selectEl);
@@ -461,6 +462,21 @@
             if (address && address !== '—') lines.push(address);
             if (whatsapp && whatsapp !== '—') lines.push(whatsapp);
             if (phone && phone !== '—') lines.push(phone);
+
+            var items = ctx.items || [];
+            lines.push('');
+            lines.push('Items');
+            if (items.length) {
+                items.forEach(function (line) {
+                    lines.push('• ' + line);
+                });
+            } else {
+                lines.push('—');
+            }
+
+            var totalText = String(ctx.totalText || '').trim();
+            lines.push('');
+            lines.push('Total: ' + (totalText && totalText !== '—' ? totalText : '—'));
 
             return lines.join('\n');
         }
