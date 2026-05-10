@@ -307,6 +307,7 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
     window.FASA_COURIER_PROCESSING_BANK_WHATSAPP = /*[[${courierProcessingBankWhatsAppBlock}]]*/ '';
+    window.FASA_WHATSAPP_PROMPT_ON_DELIVERED = /*[[${dashboardWhatsappPromptOnDelivered}]]*/ true;
     /*]]>*/
 </script>
 <script>
@@ -515,21 +516,27 @@
                 if (!form) return;
 
                 var selectedStatus = String(select.value || '').toUpperCase();
-                if (selectedStatus === 'PROCESSING' || selectedStatus === 'DELIVERED') {
-                    var rawPhone = select.getAttribute('data-whatsapp');
-                    var phone = toWhatsAppPhone(rawPhone);
-                    if (phone) {
-                        var ctx = getOrderContextFromSelect(select);
-                        var msg = buildOrderDetailsMessage(selectedStatus, ctx);
-                        var encodedMsg = encodeURIComponent(msg);
-                        var desktopUrl = 'whatsapp://send?phone=' + phone + '&text=' + encodedMsg;
-                        var webUrl = 'https://wa.me/' + phone + '?text=' + encodedMsg;
+                var promptOnDelivered = typeof window.FASA_WHATSAPP_PROMPT_ON_DELIVERED === 'undefined'
+                    || window.FASA_WHATSAPP_PROMPT_ON_DELIVERED === true;
 
-                        // Try WhatsApp Desktop first; fallback to web chat.
-                        window.location.href = desktopUrl;
-                        window.setTimeout(function () {
-                            window.open(webUrl, '_blank');
-                        }, 900);
+                if (selectedStatus === 'PROCESSING' || selectedStatus === 'DELIVERED') {
+                    var skipWhatsappForDelivered = selectedStatus === 'DELIVERED' && !promptOnDelivered;
+                    if (!skipWhatsappForDelivered) {
+                        var rawPhone = select.getAttribute('data-whatsapp');
+                        var phone = toWhatsAppPhone(rawPhone);
+                        if (phone) {
+                            var ctx = getOrderContextFromSelect(select);
+                            var msg = buildOrderDetailsMessage(selectedStatus, ctx);
+                            var encodedMsg = encodeURIComponent(msg);
+                            var desktopUrl = 'whatsapp://send?phone=' + phone + '&text=' + encodedMsg;
+                            var webUrl = 'https://wa.me/' + phone + '?text=' + encodedMsg;
+
+                            // Try WhatsApp Desktop first; fallback to web chat.
+                            window.location.href = desktopUrl;
+                            window.setTimeout(function () {
+                                window.open(webUrl, '_blank');
+                            }, 900);
+                        }
                     }
                 }
 

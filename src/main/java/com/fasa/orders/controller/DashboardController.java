@@ -22,16 +22,19 @@ public class DashboardController {
 
     private final OrderService orderService;
     private final String courierProcessingBankWhatsAppBlock;
+    private final boolean dashboardWhatsappPromptOnDelivered;
 
     public DashboardController(
             OrderService orderService,
             @Value("${fasa.orders.bank.account-name:I.F. Fasana}") String bankAccountName,
             @Value("${fasa.orders.bank.account-number:94089358}") String bankAccountNumber,
             @Value("${fasa.orders.bank.bank-label:Bank of Ceylon (BOC)}") String bankLabel,
-            @Value("${fasa.orders.bank.branch:Ibbagamuwa}") String bankBranch) {
+            @Value("${fasa.orders.bank.branch:Ibbagamuwa}") String bankBranch,
+            @Value("${fasa.dashboard.whatsapp.prompt-on-delivered:true}") boolean dashboardWhatsappPromptOnDelivered) {
         this.orderService = orderService;
         this.courierProcessingBankWhatsAppBlock =
                 buildCourierProcessingBankWhatsAppBlock(bankAccountName, bankAccountNumber, bankLabel, bankBranch);
+        this.dashboardWhatsappPromptOnDelivered = dashboardWhatsappPromptOnDelivered;
     }
 
     private static String buildCourierProcessingBankWhatsAppBlock(
@@ -78,6 +81,7 @@ public class DashboardController {
         model.addAttribute("sidebarActive", resolveSidebarActive(status));
         model.addAttribute("orderStatuses", OrderStatus.values());
         model.addAttribute("courierProcessingBankWhatsAppBlock", courierProcessingBankWhatsAppBlock);
+        model.addAttribute("dashboardWhatsappPromptOnDelivered", dashboardWhatsappPromptOnDelivered);
 
         int totalPages = ordersPage.getTotalPages();
         int current = ordersPage.getNumber();
