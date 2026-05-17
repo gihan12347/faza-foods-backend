@@ -4,9 +4,8 @@ public class OrderResponse {
 
     private String status;
     private String message;
-
-    public OrderResponse() {
-    }
+    private Long orderId;
+    private String downloadUrl;
 
     public OrderResponse(String status, String message) {
         this.status = status;
@@ -28,4 +27,16 @@ public class OrderResponse {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getDownloadUrl() { return downloadUrl; }
+
+    public void setDownloadUrl(String downloadUrl) { this.downloadUrl = downloadUrl; }
 }

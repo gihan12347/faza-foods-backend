@@ -17,10 +17,12 @@ public class AppUserAdminService {
 
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AppUserService appUserService;
 
-    public AppUserAdminService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
+    public AppUserAdminService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder, AppUserService appUserService) {
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.appUserService = appUserService;
     }
 
     @Transactional
@@ -54,8 +56,7 @@ public class AppUserAdminService {
         if (target.isEmpty()) {
             throw new IllegalArgumentException("Not authenticated.");
         }
-        AppUserEntity user = appUserRepository.findByUsername(target)
-                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        AppUserEntity user = appUserService.getByUsername(target);;
         if (currentPasswordRaw == null || currentPasswordRaw.isEmpty()) {
             throw new IllegalArgumentException("Current password is required.");
         }

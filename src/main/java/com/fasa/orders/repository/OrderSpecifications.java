@@ -1,8 +1,11 @@
 package com.fasa.orders.repository;
 
+import com.fasa.orders.controller.OrderController;
 import com.fasa.orders.entity.OrderEntity;
 import com.fasa.orders.entity.OrderItemEntity;
 import com.fasa.orders.entity.OrderStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 
 public final class OrderSpecifications {
+    private static final Logger log = LoggerFactory.getLogger(OrderSpecifications.class);
 
     private OrderSpecifications() {
     }
@@ -48,7 +52,7 @@ public final class OrderSpecifications {
                 Long id = Long.parseLong(term);
                 predicates.add(cb.equal(root.get("id"), id));
             } catch (NumberFormatException ignored) {
-                // not a numeric id
+                log.error("convert format error : " + ignored.getMessage());
             }
             return cb.or(predicates.toArray(new Predicate[predicates.size()]));
         };

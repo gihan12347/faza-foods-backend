@@ -1,8 +1,6 @@
 package com.fasa.orders.service;
 
-import com.fasa.orders.dto.DeliveryDetailsRequest;
-import com.fasa.orders.dto.OrderItemRequest;
-import com.fasa.orders.dto.OrderRequest;
+import com.fasa.orders.dto.*;
 import com.fasa.orders.entity.OrderEntity;
 import com.fasa.orders.entity.OrderItemEntity;
 import com.fasa.orders.entity.OrderStatus;
@@ -19,8 +17,10 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -32,6 +32,66 @@ public class OrderService {
 
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
+    }
+
+    /**
+     * Public lookup: {@code token} is the numeric order id issued at checkout.
+     * Returns empty if the token is missing, not numeric, or no matching order.
+     */
+    @Transactional(readOnly = true)
+    public Optional<OrderEntity> findOrderWithItems(Long orderId) {
+        if (orderId == null) {
+            return Optional.empty();
+        }
+        return orderRepository.findByIdWithItems(orderId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PublicOrderStatusResponse> findPublicStatusByOrderToken(String rawToken) {
+        if (!StringUtils.hasText(rawToken)) {
+            return Optional.empty();
+        }
+        String trimmed = rawToken.trim();
+        long orderId;
+        try {
+            orderId = Long.parseLong(trimmed);
+        } catch (NumberFormatException ex) {
+            return Optional.empty();
+        }
+        return orderRepository.findById(orderId).map(this::toPublicOrderStatus);
+    }
+
+    private PublicOrderStatusResponse toPublicOrderStatus(OrderEntity order) {
+        OrderStatus st = order.getStatus();
+        String label = st.getLabel();
+        List<OrderItemEntityDTO> items =
+                order.getItems()
+                        .stream()
+                        .map(i -> new OrderItemEntityDTO(
+                                i.getName(),
+                                i.getQuantity()
+                        ))
+                        .collect(Collectors.toList());
+        return new PublicOrderStatusResponse(order.getId(), label, publicStatusMessage(st), items);
+    }
+
+    private static String publicStatusMessage(OrderStatus status) {
+        if (status == null) {
+            return "We are reviewing your order.";
+        }
+        switch (status) {
+            case PROCESSING:
+                return "Your order is being prepared.";
+            case DELIVERED:
+                return "Your order is out for delivery or has been delivered.";
+            case DONE:
+                return "Your order is complete. Thank you for shopping with us.";
+            case REJECT:
+                return "This order could not be fulfilled. Please contact us if you need help.";
+            case PENDING:
+            default:
+                return "We have received your order and will update you soon.";
+        }
     }
 
     @Transactional(readOnly = true)
