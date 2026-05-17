@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xsi:schemaLocation="
+            http://www.ehcache.org/v3
+            http://www.ehcache.org/schema/ehcache-core.xsd">
+    <cache alias="application_parameter">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.lang.String</value-type>
+        <expiry>
+            <ttl unit="minutes">1440</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">500</heap>
+        </resources>
+    </cache>
+    <cache alias="app_user_by_username">
+        <key-type>java.lang.String</key-type>
+        <value-type>com.fasa.orders.entity.AppUserEntity</value-type>
+        <expiry>
+            <ttl unit="minutes">1440</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
+</config>
