@@ -16,16 +16,15 @@ import java.util.List;
 @Service
 public class AppUserDetailsService implements UserDetailsService {
 
-    private final AppUserRepository appUserRepository;
+    private final AppUserService appUserService;
 
-    public AppUserDetailsService(AppUserRepository appUserRepository) {
-        this.appUserRepository = appUserRepository;
+    public AppUserDetailsService(AppUserService appUserService) {
+         this.appUserService = appUserService;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AppUserEntity user = appUserRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        AppUserEntity user = appUserService.getByUsername(username);
 
         List<GrantedAuthority> authorities =
                 Collections.<GrantedAuthority>singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
