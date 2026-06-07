@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="stock-notify" th:fragment="stockNotifications"
+     th:if="${lowStockNotificationCount != null}"
+     th:classappend="${lowStockNotificationCount > 0} ? ' stock-notify--alert' : ''">
+    <button type="button"
+            class="stock-notify__toggle"
+            id="stock-notify-toggle"
+            aria-expanded="false"
+            aria-controls="stock-notify-panel"
+            aria-label="Stock notifications">
+        <img class="stock-notify__bell"
+             th:src="@{/images/notification-bell.png}"
+             src="/images/notification-bell.png"
+             width="22"
+             height="22"
+             alt=""/>
+        <span class="stock-notify__badge"
+              th:if="${lowStockNotificationCount > 0}"
+              th:classappend="${lowStockNotificationCount > 9} ? ' stock-notify__badge--wide' : ''"
+              aria-hidden="true">
+            <span class="stock-notify__badge-num"
+                  th:text="${lowStockNotificationCount > 99 ? '99+' : lowStockNotificationCount}">0</span>
+        </span>
+    </button>
+    <div class="stock-notify__panel" id="stock-notify-panel" hidden>
+        <div class="stock-notify__panel-head">
+            <div class="stock-notify__panel-title">
+                <img class="stock-notify__panel-icon"
+                     th:src="@{/images/notification-bell.png}"
+                     src="/images/notification-bell.png"
+                     width="20"
+                     height="20"
+                     alt=""/>
+                <strong>Stock alerts</strong>
+            </div>
+            <span class="stock-notify__panel-count"
+                  th:if="${lowStockNotificationCount > 0}"
+                  th:text="${lowStockNotificationCount + ' low'}">0 low</span>
+            <span class="stock-notify__panel-count stock-notify__panel-count--ok"
+                  th:if="${lowStockNotificationCount == 0}">All OK</span>
+        </div>
+        <div class="stock-notify__empty" th:if="${lowStockNotificationCount == 0}">
+            <p>No products below minimum stock right now.</p>
+        </div>
+        <ul class="stock-notify__list" th:if="${lowStockNotificationCount > 0}">
+            <li th:each="n : ${lowStockNotifications}">
+                <a class="stock-notify__item" th:href="@{/products}">
+                    <span class="stock-notify__item-name" th:text="${n.productName}">Product</span>
+                    <span class="stock-notify__item-stock">
+                        <span class="stock-notify__stock-pill stock-notify__stock-pill--low"
+                              th:text="${n.currentStock}">0</span>
+                        <span class="stock-notify__stock-sep">/</span>
+                        <span class="stock-notify__stock-min" th:text="${n.minimumStock}">0</span>
+                        <span class="stock-notify__stock-label">min</span>
+                    </span>
+                </a>
+            </li>
+        </ul>
+        <a th:if=${isAdmin} class="stock-notify__footer btn btn--outline btn--sm" th:href="@{/products}">View all products</a>
+    </div>
+</div>
+</body>
+</html>

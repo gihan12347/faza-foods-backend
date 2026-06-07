@@ -4,8 +4,10 @@ import com.fasa.orders.dto.*;
 import com.fasa.orders.entity.OrderEntity;
 import com.fasa.orders.entity.OrderItemEntity;
 import com.fasa.orders.entity.OrderStatus;
+import com.fasa.orders.entity.ProductEntity;
 import com.fasa.orders.repository.OrderRepository;
 import com.fasa.orders.repository.OrderSpecifications;
+import com.fasa.orders.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +31,11 @@ public class OrderService {
     private static final int ORDER_ID_MAX_RETRIES = 25;
 
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
 
     /**
@@ -142,18 +146,32 @@ public class OrderService {
         }
 
         for (OrderItemRequest itemRequest : request.getItems()) {
-            OrderItemEntity item = new OrderItemEntity();
-            item.setProductId(itemRequest.getId());
-            item.setName(itemRequest.getName());
-            item.setPrice(itemRequest.getPrice());
-            item.setQuantity(itemRequest.getQuantity());
-            item.setWeight(itemRequest.getWeight());
-            order.addItem(item);
+            ProductEntity product = getProductWithUpdateInventory(itemRequest);
+            if (product != null) {
+                OrderItemEntity item = new OrderItemEntity();
+                item.setProductId(product.getId());
+                item.setName(product.getName());
+                item.setPrice(product.getPrice());
+                item.setQuantity(itemRequest.getQuantity());
+                item.setWeight(itemRequest.getWeight());
+                order.addItem(item);
+            }
         }
-
         return orderRepository.saveAndFlush(order);
     }
 
+    private ProductEntity getProductWithUpdateInventory(OrderItemRequest itemRequest) {
+        Optional<ProductEntity> productEntity = productRepository.findByNameAndId(itemRequest.getName(), itemRequest.getId());
+        if (productEntity.isPresent()) {
+            ProductEntity product = productEntity.get();
+            product.setCurrentStock(product.getCurrentStock() - itemRequest.getQuantity());
+            productRepository.saveAndFlush(product);
+            return product;
+        }
+        return null;
+    }
+
+    //TODO : need to implement better encrypt method
     private long generateRandomUniqueOrderId() {
         for (int attempt = 0; attempt < ORDER_ID_MAX_RETRIES; attempt++) {
             long candidate = ThreadLocalRandom.current().nextLong(ORDER_ID_MIN, ORDER_ID_MAX + 1);

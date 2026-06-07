@@ -510,37 +510,37 @@
         });
 
         var statusSelects = document.querySelectorAll('.js-status-select');
+
+        function submitStatusForm(select, form, selectedStatus) {
+            var promptOnDelivered = typeof window.FASA_WHATSAPP_PROMPT_ON_DELIVERED === 'undefined'
+                || window.FASA_WHATSAPP_PROMPT_ON_DELIVERED === true;
+
+            if (selectedStatus === 'PROCESSING' || selectedStatus === 'DELIVERED') {
+                var skipWhatsappForDelivered = selectedStatus === 'DELIVERED' && !promptOnDelivered;
+                if (!skipWhatsappForDelivered) {
+                    var rawPhone = select.getAttribute('data-whatsapp');
+                    var phone = toWhatsAppPhone(rawPhone);
+                    if (phone) {
+                        var ctx = getOrderContextFromSelect(select);
+                        var msg = buildOrderDetailsMessage(selectedStatus, ctx);
+                        var encodedMsg = encodeURIComponent(msg);
+                        var desktopUrl = 'whatsapp://send?phone=' + phone + '&text=' + encodedMsg;
+                        var webUrl = 'https://wa.me/' + phone + '?text=' + encodedMsg;
+                        window.location.href = desktopUrl;
+                        window.setTimeout(function () {
+                            window.open(webUrl, '_blank');
+                        }, 900);
+                    }
+                }
+            }
+            form.submit();
+        }
+
         statusSelects.forEach(function (select) {
             select.addEventListener('change', function () {
                 var form = select.form;
                 if (!form) return;
-
-                var selectedStatus = String(select.value || '').toUpperCase();
-                var promptOnDelivered = typeof window.FASA_WHATSAPP_PROMPT_ON_DELIVERED === 'undefined'
-                    || window.FASA_WHATSAPP_PROMPT_ON_DELIVERED === true;
-
-                if (selectedStatus === 'PROCESSING' || selectedStatus === 'DELIVERED') {
-                    var skipWhatsappForDelivered = selectedStatus === 'DELIVERED' && !promptOnDelivered;
-                    if (!skipWhatsappForDelivered) {
-                        var rawPhone = select.getAttribute('data-whatsapp');
-                        var phone = toWhatsAppPhone(rawPhone);
-                        if (phone) {
-                            var ctx = getOrderContextFromSelect(select);
-                            var msg = buildOrderDetailsMessage(selectedStatus, ctx);
-                            var encodedMsg = encodeURIComponent(msg);
-                            var desktopUrl = 'whatsapp://send?phone=' + phone + '&text=' + encodedMsg;
-                            var webUrl = 'https://wa.me/' + phone + '?text=' + encodedMsg;
-
-                            // Try WhatsApp Desktop first; fallback to web chat.
-                            window.location.href = desktopUrl;
-                            window.setTimeout(function () {
-                                window.open(webUrl, '_blank');
-                            }, 900);
-                        }
-                    }
-                }
-
-                form.submit();
+                submitStatusForm(select, form, String(select.value || '').toUpperCase());
             });
         });
 

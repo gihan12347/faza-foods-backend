@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Products - Fasa Products</title>
+    <link rel="icon" type="image/png" th:href="@{/images/fasa-logo.png}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="dash-body"
+      th:attr="data-suggested-id=${suggestedNextId},
+               data-open-modal=${openModal},
+               data-form-mode=${formMode}">
+<header th:replace="~{header :: header}"></header>
+
+<div class="app-shell">
+    <aside th:replace="~{sidebar :: sidebar(active=${sidebarActive})}"></aside>
+    <main class="main-area">
+        <div class="panel product-mgmt-panel">
+            <div class="panel__head panel__head--row">
+                <div>
+                    <h1 class="panel__title">Products</h1>
+                    <span class="panel__subtitle">Manage catalog, stock, and storefront API data</span>
+                </div>
+                <button type="button" class="btn btn--primary js-product-add">Add product</button>
+            </div>
+
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Total products</span>
+                    <strong class="kpi-card__value" th:text="${products != null ? #lists.size(products) : 0}">0</strong>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Low stock</span>
+                    <strong class="kpi-card__value" th:text="${lowStockCount}">0</strong>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Storefront API</span>
+                    <strong class="kpi-card__value kpi-card__value--sm">GET /api/products</strong>
+                </div>
+            </div>
+
+            <p class="flash flash--ok" th:if="${flashMessage}" th:text="${flashMessage}">Saved.</p>
+            <p class="flash flash--err" th:if="${flashError}" th:text="${flashError}">Error.</p>
+
+            <form class="toolbar" role="search" onsubmit="return false;">
+                <div class="search-form">
+                    <label for="product-search" class="visually-hidden">Search products</label>
+                    <input id="product-search" type="search" placeholder="Search by ID, name, or category…" autocomplete="off"/>
+                </div>
+            </form>
+
+            <div class="empty-state" th:if="${products == null or products.isEmpty()}">
+                No products yet. Use <strong>Add product</strong> to create one.
+            </div>
+
+            <p class="meta js-product-search-meta" th:if="${products != null and !products.isEmpty()}" hidden>
+                Showing <span class="js-product-visible-count">0</span> of <span th:text="${#lists.size(products)}">0</span>
+            </p>
+
+            <!-- Desktop / tablet table -->
+            <div class="table-wrap product-table-wrap" th:if="${products != null and !products.isEmpty()}">
+                <table class="data-table product-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Min</th>
+                        <th>Best</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${products}"
+                        class="js-product-item"
+                        th:attr="data-product-id=${p.id},
+                                 data-search=${p.id + ' ' + p.name + ' ' + p.category}">
+                        <td th:text="${p.id}">1</td>
+                        <td>
+                            <span class="product-table__name" th:text="${p.name}">Name</span>
+                            <span class="product-table__weight meta" th:if="${p.weight != null and !#strings.isEmpty(p.weight)}"
+                                  th:text="${p.weight}">50g</span>
+                        </td>
+                        <td th:text="${p.category}">Category</td>
+                        <td th:text="|Rs. ${p.price}|">Rs. 0</td>
+                        <td>
+                            <span th:text="${p.currentStock}">0</span>
+                            <span class="product-badge product-badge--low"
+                                  th:if="${p.currentStock != null and p.minimumStock != null and p.currentStock < p.minimumStock}">Low</span>
+                        </td>
+                        <td th:text="${p.minimumStock}">0</td>
+                        <td>
+                            <span class="product-badge product-badge--yes" th:if="${p.bestSeller}">Yes</span>
+                            <span class="product-badge" th:unless="${p.bestSeller}">No</span>
+                        </td>
+                        <td class="td-actions">
+                            <div class="product-actions">
+                                <button type="button" class="btn btn--primary btn--sm js-product-edit"
+                                        th:attr="data-id=${p.id}">Edit</button>
+                                <button type="button" class="btn btn--soft btn--sm js-product-delete"
+                                        th:attr="data-id=${p.id},data-name=${p.name}">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile cards (same pattern as orders) -->
+            <div class="products-cards" th:if="${products != null and !products.isEmpty()}">
+                <article class="product-card js-product-item"
+                         th:each="p : ${products}"
+                         th:attr="data-product-id=${p.id},
+                                  data-search=${p.id + ' ' + p.name + ' ' + p.category}">
+                    <header class="product-card__head">
+                        <h3 class="product-card__title">
+                            <span th:text="${p.name}">Product</span>
+                        </h3>
+                        <span class="product-card__id">#<span th:text="${p.id}">1</span></span>
+                    </header>
+                    <section class="product-card__section">
+                        <h4 class="product-card__label">Category</h4>
+                        <p class="product-card__value" th:text="${p.category}">—</p>
+                    </section>
+                    <section class="product-card__section product-card__section--grid">
+                        <div>
+                            <h4 class="product-card__label">Price</h4>
+                            <p class="product-card__value" th:text="|Rs. ${p.price}|">Rs. 0</p>
+                        </div>
+                        <div>
+                            <h4 class="product-card__label">Weight</h4>
+                            <p class="product-card__value" th:text="${p.weight != null and !#strings.isEmpty(p.weight) ? p.weight : '—'}">—</p>
+                        </div>
+                        <div>
+                            <h4 class="product-card__label">Stock</h4>
+                            <p class="product-card__value">
+                                <span th:text="${p.currentStock}">0</span>
+                                <span class="product-badge product-badge--low"
+                                      th:if="${p.currentStock != null and p.minimumStock != null and p.currentStock < p.minimumStock}">Low</span>
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="product-card__label">Min stock</h4>
+                            <p class="product-card__value" th:text="${p.minimumStock}">0</p>
+                        </div>
+                    </section>
+                    <section class="product-card__section">
+                        <h4 class="product-card__label">Best seller</h4>
+                        <p class="product-card__value">
+                            <span class="product-badge product-badge--yes" th:if="${p.bestSeller}">Yes</span>
+                            <span class="product-badge" th:unless="${p.bestSeller}">No</span>
+                        </p>
+                    </section>
+                    <footer class="product-card__actions product-actions">
+                        <button type="button" class="btn btn--primary btn--sm js-product-edit"
+                                th:attr="data-id=${p.id}">Edit</button>
+                        <button type="button" class="btn btn--soft btn--sm js-product-delete"
+                                th:attr="data-id=${p.id},data-name=${p.name}">Delete</button>
+                    </footer>
+                </article>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add / Edit modal -->
+<div id="product-form-modal" class="dash-modal" hidden aria-hidden="true">
+    <div class="dash-modal__backdrop js-modal-close" data-modal="product-form"></div>
+    <div class="dash-modal__dialog dash-modal__dialog--wide" role="dialog" aria-modal="true" aria-labelledby="product-form-modal-title">
+        <header class="dash-modal__header">
+            <h2 class="dash-modal__title" id="product-form-modal-title">Add product</h2>
+            <button type="button" class="dash-modal__close js-modal-close" data-modal="product-form" aria-label="Close">&times;</button>
+        </header>
+        <form id="product-modal-form" class="product-form dash-modal__body" method="post" th:action="@{/products}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <p class="flash flash--err js-modal-form-error" hidden></p>
+            <div th:replace="~{fragments/product-form-fields :: fields}"></div>
+            <footer class="dash-modal__footer">
+                <button type="button" class="btn btn--outline js-modal-close" data-modal="product-form">Cancel</button>
+                <button type="submit" class="btn btn--primary js-product-form-submit">Save product</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div id="product-delete-modal" class="dash-modal" hidden aria-hidden="true">
+    <div class="dash-modal__backdrop js-modal-close" data-modal="product-delete"></div>
+    <div class="dash-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="product-delete-modal-title">
+        <header class="dash-modal__header">
+            <h2 class="dash-modal__title" id="product-delete-modal-title">Delete product?</h2>
+            <button type="button" class="dash-modal__close js-modal-close" data-modal="product-delete" aria-label="Close">&times;</button>
+        </header>
+        <div class="dash-modal__body">
+            <p class="dash-modal__message">
+                Remove <strong class="js-delete-product-name">this product</strong>? This cannot be undone.
+            </p>
+        </div>
+        <form id="product-delete-form" class="dash-modal__footer dash-modal__footer--split" method="post" action="">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="name" id="delete-product-name" value=""/>
+            <button type="button" class="btn btn--outline js-modal-close" data-modal="product-delete">Cancel</button>
+            <button type="submit" class="btn btn--soft">Delete</button>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/products-admin.js}"></script>
+<script>
+    (function () {
+        window.history.pushState(null, '', window.location.href);
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function () { window.history.go(1); });
+        window.addEventListener('pageshow', function (e) { if (e.persisted) window.location.reload(); });
+    })();
+</script>
+</body>
+</html>

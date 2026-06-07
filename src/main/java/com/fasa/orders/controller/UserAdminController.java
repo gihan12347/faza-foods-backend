@@ -28,8 +28,6 @@ public class UserAdminController {
     @GetMapping("/users")
     public String userManagement(Model model, Authentication authentication) {
         model.addAttribute("sidebarActive", "users");
-        boolean admin = isAdmin(authentication);
-        model.addAttribute("isAdmin", admin);
         model.addAttribute("currentUsername", authentication != null ? authentication.getName() : "");
         return "users-manage";
     }
@@ -66,7 +64,7 @@ public class UserAdminController {
         return "redirect:/users";
     }
 
-    private static boolean isAdmin(Authentication authentication) {
+    public static boolean isAdmin(Authentication authentication) {
         if (authentication == null) {
             return false;
         }

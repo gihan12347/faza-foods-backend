@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="product-form__grid" th:fragment="fields">
+    <section class="product-form__section">
+        <h3 class="product-form__section-title">Basic</h3>
+        <div class="product-form__field product-form__field--id-create">
+            <label for="pf-id">Product ID</label>
+            <input id="pf-id" name="id" type="number" min="1" required
+                   th:value="${productForm != null ? productForm.id : ''}"/>
+            <span class="product-form__help">Must be unique.</span>
+        </div>
+        <div class="product-form__field product-form__field--id-edit" hidden>
+            <label>Product ID</label>
+            <input id="pf-id-readonly" type="text" class="product-form__readonly" readonly tabindex="-1"/>
+        </div>
+        <div class="product-form__field">
+            <label for="pf-name">Name</label>
+            <input id="pf-name" name="name" type="text" maxlength="200" required
+                   th:value="${productForm != null ? productForm.name : ''}"/>
+        </div>
+        <div class="product-form__field">
+            <label for="pf-category">Category</label>
+            <input id="pf-category" name="category" type="text" maxlength="120" required
+                   placeholder="Masalas &amp; Cooking Essentials"
+                   th:value="${productForm != null ? productForm.category : ''}"/>
+        </div>
+        <div class="product-form__field">
+            <label for="pf-description">Description</label>
+            <textarea id="pf-description" name="description" rows="3"
+                      th:text="${productForm != null ? productForm.description : ''}"></textarea>
+        </div>
+        <div class="product-form__field product-form__field--checkbox">
+            <label>
+                <input id="pf-best-seller" name="bestSeller" type="checkbox" value="true"
+                       th:checked="${productForm != null and productForm.bestSeller}"/>
+                Best seller
+            </label>
+        </div>
+    </section>
+
+    <section class="product-form__section">
+        <h3 class="product-form__section-title">Pricing &amp; stock</h3>
+        <div class="product-form__row">
+            <div class="product-form__field">
+                <label for="pf-price">Price (Rs.)</label>
+                <input id="pf-price" name="price" type="number" min="0" required
+                       th:value="${productForm != null ? productForm.price : 0}"/>
+            </div>
+            <div class="product-form__field">
+                <label for="pf-original-price">Original price (Rs.)</label>
+                <input id="pf-original-price" name="originalPrice" type="number" min="0" required
+                       th:value="${productForm != null ? productForm.originalPrice : 0}"/>
+            </div>
+        </div>
+        <div class="product-form__row">
+            <div class="product-form__field">
+                <label for="pf-current-stock">Current stock</label>
+                <input id="pf-current-stock" name="currentStock" type="number" min="0" required
+                       th:value="${productForm != null ? productForm.currentStock : 0}"/>
+            </div>
+            <div class="product-form__field">
+                <label for="pf-minimum-stock">Minimum stock</label>
+                <input id="pf-minimum-stock" name="minimumStock" type="number" min="0" required
+                       th:value="${productForm != null ? productForm.minimumStock : 0}"/>
+            </div>
+        </div>
+        <div class="product-form__field">
+            <label for="pf-weight">Weight</label>
+            <input id="pf-weight" name="weight" type="text" maxlength="40" placeholder="50g"
+                   th:value="${productForm != null ? productForm.weight : ''}"/>
+        </div>
+    </section>
+
+    <section class="product-form__section">
+        <h3 class="product-form__section-title">Images &amp; usage</h3>
+        <div class="product-form__field">
+            <label for="pf-image">Primary image URL</label>
+            <input id="pf-image" name="image" type="text" maxlength="500"
+                   placeholder="/public/images/example.png"
+                   th:value="${productForm != null ? productForm.image : ''}"/>
+        </div>
+        <div class="product-form__field">
+            <label for="pf-images">All image URLs</label>
+            <textarea id="pf-images" name="imagesText" rows="3" placeholder="One URL per line"
+                      th:text="${productForm != null ? productForm.imagesText : ''}"></textarea>
+        </div>
+        <div class="product-form__field">
+            <label for="pf-how-to-use">How to use</label>
+            <textarea id="pf-how-to-use" name="howToUse" rows="2"
+                      th:text="${productForm != null ? productForm.howToUse : ''}"></textarea>
+        </div>
+    </section>
+
+    <section class="product-form__section product-form__section--full">
+        <h3 class="product-form__section-title">Details (one per line)</h3>
+        <div class="product-form__row product-form__row--stack">
+            <div class="product-form__field">
+                <label for="pf-ingredients">Ingredients</label>
+                <textarea id="pf-ingredients" name="ingredientsText" rows="4"
+                          th:text="${productForm != null ? productForm.ingredientsText : ''}"></textarea>
+            </div>
+            <div class="product-form__field">
+                <label for="pf-use-for">Use for</label>
+                <textarea id="pf-use-for" name="useForText" rows="4"
+                          th:text="${productForm != null ? productForm.useForText : ''}"></textarea>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>

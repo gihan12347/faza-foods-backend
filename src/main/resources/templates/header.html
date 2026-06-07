@@ -8,10 +8,14 @@
                 <img src="/images/fasa-logo.png" alt="Fasa Products logo" class="brand__logo"/>
             </span>
         </div>
-        <form th:action="@{/logout}" method="post" class="logout-form">
-            <button type="submit" class="btn btn--logout" aria-label="Logout">Logout</button>
-        </form>
+        <div class="topbar__actions">
+            <div th:replace="~{fragments/stock-notifications :: stockNotifications}"></div>
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="btn btn--logout" aria-label="Logout">Logout</button>
+            </form>
+        </div>
     </div>
+    <script th:src="@{/js/stock-notifications.js}"></script>
 </header>
 </body>
 </html>
