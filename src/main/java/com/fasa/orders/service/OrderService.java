@@ -203,6 +203,7 @@ public class OrderService {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
         order.setStatus(newStatus);
+        updateTheInventoryAfterReject(order.getItems());
         orderRepository.save(order);
     }
 
@@ -214,6 +215,16 @@ public class OrderService {
             return Optional.of(OrderStatus.valueOf(raw.trim().toUpperCase()));
         } catch (IllegalArgumentException ex) {
             return Optional.empty();
+        }
+    }
+
+    public void updateTheInventoryAfterReject(List<OrderItemEntity> orderItemEntities) {
+        for (OrderItemEntity orderItemEntity : orderItemEntities) {
+            Optional<ProductEntity> productEntity = productRepository.findById(orderItemEntity.getProductId());
+            if (productEntity.isPresent()) {
+                ProductEntity product = productEntity.get();
+                product.setCurrentStock(product.getCurrentStock() + orderItemEntity.getQuantity());
+            }
         }
     }
 }

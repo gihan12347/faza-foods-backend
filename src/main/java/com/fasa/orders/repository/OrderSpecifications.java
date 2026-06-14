@@ -24,7 +24,7 @@ public final class OrderSpecifications {
 
     public static Specification<OrderEntity> hasStatus(OrderStatus status) {
         if (status == null) {
-            return (root, query, cb) -> cb.conjunction();
+            return (root, query, cb) -> cb.notEqual(root.get("status"), OrderStatus.REJECT);
         }
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
