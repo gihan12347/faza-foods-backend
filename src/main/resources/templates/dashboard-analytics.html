@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Sales analytics - Fasa Products</title>
+    <link rel="icon" type="image/png" th:href="@{/images/fasa-logo.png}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="dash-body">
+<header th:replace="~{header :: header}"></header>
+
+<div class="app-shell">
+    <aside th:replace="~{sidebar :: sidebar(active=${sidebarActive})}"></aside>
+    <main class="main-area">
+        <div class="panel analytics-panel">
+            <div class="panel__head panel__head--row">
+                <div>
+                    <h1 class="panel__title">Sales analytics</h1>
+                    <span class="panel__subtitle"
+                          th:text="|${analytics.rangeLabel} · excludes rejected orders|">Last 30 days</span>
+                </div>
+            </div>
+
+            <form class="toolbar analytics-toolbar" th:action="@{/analytics}" method="get">
+                <div class="analytics-range" role="group" aria-label="Date range">
+                    <a th:href="@{/analytics(range='7d')}"
+                       class="analytics-range__btn"
+                       th:classappend="${selectedRange == '7d'} ? ' is-active' : ''">7 days</a>
+                    <a th:href="@{/analytics(range='30d')}"
+                       class="analytics-range__btn"
+                       th:classappend="${selectedRange == '30d'} ? ' is-active' : ''">30 days</a>
+                    <a th:href="@{/analytics(range='90d')}"
+                       class="analytics-range__btn"
+                       th:classappend="${selectedRange == '90d'} ? ' is-active' : ''">90 days</a>
+                    <a th:href="@{/analytics(range='ytd')}"
+                       class="analytics-range__btn"
+                       th:classappend="${selectedRange == 'ytd'} ? ' is-active' : ''">YTD</a>
+                    <a th:href="@{/analytics(range='365d')}"
+                       class="analytics-range__btn"
+                       th:classappend="${selectedRange == '365d' or selectedRange == '1y'} ? ' is-active' : ''">12 months</a>
+                    <a th:href="@{/analytics(range='all')}"
+                       class="analytics-range__btn"
+                       th:classappend="${selectedRange == 'all'} ? ' is-active' : ''">All time</a>
+                </div>
+                <div class="analytics-custom-range">
+                    <label for="analytics-from" class="analytics-custom-range__label">From</label>
+                    <input id="analytics-from" type="date" name="from"
+                           th:value="${analytics.fromDate != null ? analytics.fromDate : customFrom}"/>
+                    <label for="analytics-to" class="analytics-custom-range__label">To</label>
+                    <input id="analytics-to" type="date" name="to"
+                           th:value="${analytics.toDate != null ? analytics.toDate : customTo}"/>
+                    <input type="hidden" name="range" value="custom"/>
+                    <button type="submit" class="btn btn--primary btn--sm">Apply</button>
+                </div>
+            </form>
+
+            <div class="kpi-row analytics-kpi-row" th:if="${analytics != null and analytics.summary != null}">
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Total sales</span>
+                    <strong class="kpi-card__value"
+                            th:text="|Rs. ${#numbers.formatDecimal(analytics.summary.totalRevenue, 1, 2)}|">Rs. 0</strong>
+                </div>
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Orders</span>
+                    <strong class="kpi-card__value" th:text="${analytics.summary.orderCount}">0</strong>
+                </div>
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Items sold</span>
+                    <strong class="kpi-card__value" th:text="${analytics.summary.itemsSold}">0</strong>
+                </div>
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Avg. order value</span>
+                    <strong class="kpi-card__value"
+                            th:text="|Rs. ${#numbers.formatDecimal(analytics.summary.averageOrderValue, 1, 2)}|">Rs. 0</strong>
+                </div>
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Product revenue</span>
+                    <strong class="kpi-card__value"
+                            th:text="|Rs. ${#numbers.formatDecimal(analytics.summary.productRevenue, 1, 2)}|">Rs. 0</strong>
+                </div>
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Delivery fees</span>
+                    <strong class="kpi-card__value"
+                            th:text="|Rs. ${#numbers.formatDecimal(analytics.summary.deliveryRevenue, 1, 2)}|">Rs. 0</strong>
+                </div>
+                <div class="kpi-card analytics-kpi-card">
+                    <span class="kpi-card__label">Unique products sold</span>
+                    <strong class="kpi-card__value" th:text="${analytics.summary.uniqueProductsSold}">0</strong>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <section class="analytics-card analytics-card--wide">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Sales trend</h2>
+                        <span class="analytics-card__hint">Daily revenue and order volume</span>
+                    </header>
+                    <div class="analytics-chart-wrap">
+                        <canvas id="chart-sales-trend" aria-label="Sales trend chart" role="img"></canvas>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Revenue split</h2>
+                        <span class="analytics-card__hint">Products vs delivery fees</span>
+                    </header>
+                    <div class="analytics-chart-wrap analytics-chart-wrap--doughnut">
+                        <canvas id="chart-revenue-split" aria-label="Revenue split chart" role="img"></canvas>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Orders by status</h2>
+                        <span class="analytics-card__hint">All statuses in selected period</span>
+                    </header>
+                    <div class="analytics-chart-wrap analytics-chart-wrap--doughnut">
+                        <canvas id="chart-order-status" aria-label="Order status chart" role="img"></canvas>
+                    </div>
+                </section>
+
+                <section class="analytics-card analytics-card--wide">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Top selling products</h2>
+                        <span class="analytics-card__hint">By units sold</span>
+                    </header>
+                    <div class="analytics-chart-wrap">
+                        <canvas id="chart-top-products" aria-label="Top products chart" role="img"></canvas>
+                    </div>
+                </section>
+
+                <section class="analytics-card analytics-card--wide">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Lowest selling products</h2>
+                        <span class="analytics-card__hint">Products with sales, ranked lowest first</span>
+                    </header>
+                    <div class="analytics-chart-wrap">
+                        <canvas id="chart-low-products" aria-label="Lowest products chart" role="img"></canvas>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Top districts</h2>
+                        <span class="analytics-card__hint">By revenue</span>
+                    </header>
+                    <div class="analytics-chart-wrap">
+                        <canvas id="chart-districts" aria-label="District sales chart" role="img"></canvas>
+                    </div>
+                </section>
+
+                <section class="analytics-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Delivery type</h2>
+                        <span class="analytics-card__hint">Order count by fulfillment</span>
+                    </header>
+                    <div class="analytics-chart-wrap analytics-chart-wrap--doughnut">
+                        <canvas id="chart-delivery-type" aria-label="Delivery type chart" role="img"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <div class="analytics-tables">
+                <section class="analytics-table-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Top products</h2>
+                    </header>
+                    <div class="table-wrap" th:if="${analytics.topProducts != null and !analytics.topProducts.isEmpty()}">
+                        <table class="data-table analytics-table">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Units sold</th>
+                                <th>Revenue</th>
+                                <th>Share</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row, stat : ${analytics.topProducts}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${row.name}">Product</td>
+                                <td th:text="${row.quantitySold}">0</td>
+                                <td th:text="|Rs. ${#numbers.formatDecimal(row.revenue, 1, 2)}|">Rs. 0</td>
+                                <td>
+                                    <span class="analytics-share">
+                                        <span class="analytics-share__bar" th:style="|width: ${row.sharePercent}%|"></span>
+                                        <span class="analytics-share__text" th:text="|${#numbers.formatDecimal(row.sharePercent, 1, 1)}%|">0%</span>
+                                    </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="meta analytics-empty" th:if="${analytics.topProducts == null or analytics.topProducts.isEmpty()}">
+                        No product sales in this period.
+                    </p>
+                </section>
+
+                <section class="analytics-table-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">Lowest selling products</h2>
+                    </header>
+                    <div class="table-wrap" th:if="${analytics.lowestProducts != null and !analytics.lowestProducts.isEmpty()}">
+                        <table class="data-table analytics-table">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Units sold</th>
+                                <th>Revenue</th>
+                                <th>Share</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row, stat : ${analytics.lowestProducts}">
+                                <td th:text="${stat.count}">1</td>
+                                <td th:text="${row.name}">Product</td>
+                                <td th:text="${row.quantitySold}">0</td>
+                                <td th:text="|Rs. ${#numbers.formatDecimal(row.revenue, 1, 2)}|">Rs. 0</td>
+                                <td th:text="|${#numbers.formatDecimal(row.sharePercent, 1, 1)}%|">0%</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="meta analytics-empty" th:if="${analytics.lowestProducts == null or analytics.lowestProducts.isEmpty()}">
+                        No product sales in this period.
+                    </p>
+                </section>
+
+                <section class="analytics-table-card">
+                    <header class="analytics-card__head">
+                        <h2 class="analytics-card__title">District performance</h2>
+                    </header>
+                    <div class="table-wrap" th:if="${analytics.topDistricts != null and !analytics.topDistricts.isEmpty()}">
+                        <table class="data-table analytics-table">
+                            <thead>
+                            <tr>
+                                <th>District</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${analytics.topDistricts}">
+                                <td th:text="${row.district}">District</td>
+                                <td th:text="${row.orderCount}">0</td>
+                                <td th:text="|Rs. ${#numbers.formatDecimal(row.revenue, 1, 2)}|">Rs. 0</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="meta analytics-empty" th:if="${analytics.topDistricts == null or analytics.topDistricts.isEmpty()}">
+                        No district data in this period.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    window.FASA_ANALYTICS_CHARTS = JSON.parse(/*[[${chartJson}]]*/ '{}');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script th:src="@{/js/dashboard-analytics.js}"></script>
+</body>
+</html>

@@ -18,9 +18,11 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CacheService cacheService;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, CacheService cacheService) {
         this.productRepository = productRepository;
+        this.cacheService = cacheService;
     }
 
     @Transactional(readOnly = true)
@@ -62,6 +64,7 @@ public class ProductService {
         if (productRepository.existsById(dto.getId())) {
             throw new IllegalArgumentException("Product ID already exists: " + dto.getId());
         }
+        cacheService.clearProductCache();
         productRepository.save(toEntity(dto));
         return dto;
     }
@@ -75,6 +78,7 @@ public class ProductService {
         ProductEntity existing = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
         applyDto(existing, dto);
+        cacheService.clearProductCache();
         productRepository.save(existing);
         dto.setId(id);
         return dto;
@@ -85,13 +89,8 @@ public class ProductService {
         if (id == null || !productRepository.existsById(id)) {
             throw new IllegalArgumentException("Product not found.");
         }
+        cacheService.clearProductCache();
         productRepository.deleteById(id);
-    }
-
-    @Transactional
-    public void saveFromDto(ProductDto dto) {
-        ProductEntity entity = toEntity(dto);
-        productRepository.save(entity);
     }
 
     private static void validate(ProductDto dto) {

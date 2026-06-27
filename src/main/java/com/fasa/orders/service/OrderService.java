@@ -161,9 +161,8 @@ public class OrderService {
     }
 
     private ProductEntity getProductWithUpdateInventory(OrderItemRequest itemRequest) {
-        Optional<ProductEntity> productEntity = productRepository.findByNameAndId(itemRequest.getName(), itemRequest.getId());
-        if (productEntity.isPresent()) {
-            ProductEntity product = productEntity.get();
+        ProductEntity product = productRepository.findByNameAndId(itemRequest.getName(), itemRequest.getId());
+        if (product != null) {
             product.setCurrentStock(product.getCurrentStock() - itemRequest.getQuantity());
             productRepository.saveAndFlush(product);
             return product;

@@ -37,7 +37,8 @@ public class OrderController {
 
     public OrderController(
             OrderService orderService,
-            OrderReceiptPdfService orderReceiptPdfService, ApplicationParameterService applicationParameterService) {
+            OrderReceiptPdfService orderReceiptPdfService,
+            ApplicationParameterService applicationParameterService) {
         this.orderService = orderService;
         this.orderReceiptPdfService = orderReceiptPdfService;
         this.applicationParameterService = applicationParameterService;

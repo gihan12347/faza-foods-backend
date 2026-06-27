@@ -25,4 +25,34 @@
             <heap unit="entries">1000</heap>
         </resources>
     </cache>
+    <cache alias="allProducts">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.util.List</value-type>
+        <expiry>
+            <ttl unit="minutes">1440</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">10</heap>
+        </resources>
+    </cache>
+    <cache alias="lowStockProducts">
+        <key-type>java.lang.Object</key-type>
+        <value-type>java.util.List</value-type>
+        <expiry>
+            <ttl unit="minutes">1440</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">10</heap>
+        </resources>
+    </cache>
+    <cache alias="productByNameAndId">
+        <key-type>java.lang.String</key-type>
+        <value-type>com.fasa.orders.entity.ProductEntity</value-type>
+        <expiry>
+            <ttl unit="minutes">1440</ttl>
+        </expiry>
+        <resources>
+            <heap unit="entries">1000</heap>
+        </resources>
+    </cache>
 </config>
