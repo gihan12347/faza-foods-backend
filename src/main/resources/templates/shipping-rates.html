@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Shipping rates - Fasa Products</title>
+    <link rel="icon" type="image/png" th:href="@{/images/fasa-logo.png}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="dash-body"
+      th:attr="data-suggested-id=${suggestedNextId},
+               data-open-modal=${openModal},
+               data-form-mode=${formMode}">
+<header th:replace="~{header :: header}"></header>
+
+<div class="app-shell">
+    <aside th:replace="~{sidebar :: sidebar(active=${sidebarActive})}"></aside>
+    <main class="main-area">
+        <div class="panel product-mgmt-panel">
+            <div class="panel__head panel__head--row">
+                <div>
+                    <h1 class="panel__title">Shipping rate tiers</h1>
+                    <span class="panel__subtitle">Manage delivery prices by rate type, method, and weight</span>
+                </div>
+                <button type="button" class="btn btn--primary js-rate-add">Add rate</button>
+            </div>
+
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Total tiers</span>
+                    <strong class="kpi-card__value" th:text="${rates != null ? #lists.size(rates) : 0}">0</strong>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Rate types</span>
+                    <strong class="kpi-card__value kpi-card__value--sm">normal · special · offer</strong>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-card__label">Methods</span>
+                    <strong class="kpi-card__value kpi-card__value--sm">courier · cash on delivery</strong>
+                </div>
+            </div>
+
+            <p class="flash flash--ok" th:if="${flashMessage}" th:text="${flashMessage}">Saved.</p>
+            <p class="flash flash--err" th:if="${flashError}" th:text="${flashError}">Error.</p>
+
+            <form class="toolbar" role="search" onsubmit="return false;">
+                <div class="search-form">
+                    <label for="rate-search" class="visually-hidden">Search shipping rates</label>
+                    <input id="rate-search" type="search" placeholder="Search by ID, rate type, method…" autocomplete="off"/>
+                </div>
+            </form>
+
+            <div class="empty-state" th:if="${rates == null or rates.isEmpty()}">
+                No shipping rates yet. Use <strong>Add rate</strong> to create one.
+            </div>
+
+            <p class="meta js-rate-search-meta" th:if="${rates != null and !rates.isEmpty()}" hidden>
+                Showing <span class="js-rate-visible-count">0</span> of <span th:text="${#lists.size(rates)}">0</span>
+            </p>
+
+            <div class="table-wrap product-table-wrap" th:if="${rates != null and !rates.isEmpty()}">
+                <table class="data-table product-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Rate type</th>
+                        <th>Method</th>
+                        <th>Min weight</th>
+                        <th>Max weight</th>
+                        <th>Price</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${rates}"
+                        class="js-rate-item"
+                        th:attr="data-rate-id=${r.id},
+                                 data-search=${r.id + ' ' + r.rateType + ' ' + r.deliveryTypes}">
+                        <td th:text="${r.id}">1</td>
+                        <td th:text="${r.rateType}">normal</td>
+                        <td th:text="${r.deliveryTypes}">courier</td>
+                        <td th:text="${r.minWeight}">0</td>
+                        <td th:text="${r.maxWeight}">0</td>
+                        <td th:text="|Rs. ${#numbers.formatDecimal(r.price, 1, 2)}|">Rs. 0</td>
+                        <td class="td-actions">
+                            <div class="product-actions">
+                                <button type="button" class="btn btn--primary btn--sm js-rate-edit"
+                                        th:attr="data-id=${r.id}">Edit</button>
+                                <button type="button" class="btn btn--soft btn--sm js-rate-delete"
+                                        th:attr="data-id=${r.id},
+                                                 data-label=|${r.rateType} / ${r.deliveryTypes} (${r.minWeight}-${r.maxWeight})|">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="products-cards" th:if="${rates != null and !rates.isEmpty()}">
+                <article class="product-card js-rate-item"
+                         th:each="r : ${rates}"
+                         th:attr="data-rate-id=${r.id},
+                                  data-search=${r.id + ' ' + r.rateType + ' ' + r.deliveryTypes}">
+                    <header class="product-card__head">
+                        <h3 class="product-card__title">
+                            <span th:text="${r.rateType}">normal</span>
+                            <span> · </span>
+                            <span th:text="${r.deliveryTypes}">courier</span>
+                        </h3>
+                        <span class="product-card__id">#<span th:text="${r.id}">1</span></span>
+                    </header>
+                    <section class="product-card__section product-card__section--grid">
+                        <div>
+                            <h4 class="product-card__label">Min weight</h4>
+                            <p class="product-card__value" th:text="${r.minWeight}">0</p>
+                        </div>
+                        <div>
+                            <h4 class="product-card__label">Max weight</h4>
+                            <p class="product-card__value" th:text="${r.maxWeight}">0</p>
+                        </div>
+                        <div>
+                            <h4 class="product-card__label">Price</h4>
+                            <p class="product-card__value" th:text="|Rs. ${#numbers.formatDecimal(r.price, 1, 2)}|">Rs. 0</p>
+                        </div>
+                    </section>
+                    <footer class="product-card__actions product-actions">
+                        <button type="button" class="btn btn--primary btn--sm js-rate-edit"
+                                th:attr="data-id=${r.id}">Edit</button>
+                        <button type="button" class="btn btn--soft btn--sm js-rate-delete"
+                                th:attr="data-id=${r.id},
+                                         data-label=|${r.rateType} / ${r.deliveryTypes} (${r.minWeight}-${r.maxWeight})|">Delete</button>
+                    </footer>
+                </article>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="rate-form-modal" class="dash-modal" hidden aria-hidden="true">
+    <div class="dash-modal__backdrop js-modal-close" data-modal="rate-form"></div>
+    <div class="dash-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rate-form-modal-title">
+        <header class="dash-modal__header">
+            <h2 class="dash-modal__title" id="rate-form-modal-title">Add shipping rate</h2>
+            <button type="button" class="dash-modal__close js-modal-close" data-modal="rate-form" aria-label="Close">&times;</button>
+        </header>
+        <form id="rate-modal-form" class="product-form dash-modal__body" method="post" th:action="@{/shipping-rates}">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <p class="flash flash--err js-modal-form-error" hidden></p>
+
+            <div class="product-form__grid">
+                <section class="product-form__section product-form__section--full">
+                    <h3 class="product-form__section-title">Rate details</h3>
+
+                    <div class="product-form__field product-form__field--id-create">
+                        <label for="sr-id">Rate ID</label>
+                        <input id="sr-id" name="id" type="number" min="1" required
+                               th:value="${shippingRateForm != null ? shippingRateForm.id : ''}"/>
+                        <span class="product-form__help">Must be unique.</span>
+                    </div>
+                    <div class="product-form__field product-form__field--id-edit" hidden>
+                        <label>Rate ID</label>
+                        <input id="sr-id-readonly" type="text" class="product-form__readonly" readonly tabindex="-1"/>
+                    </div>
+
+                    <div class="product-form__row">
+                        <div class="product-form__field">
+                            <label for="sr-rate-type">Rate type</label>
+                            <select id="sr-rate-type" name="rateType" required>
+                                <option th:each="rt : ${rateTypes}"
+                                        th:value="${rt.name()}"
+                                        th:text="${rt.name()}"
+                                        th:selected="${shippingRateForm != null and shippingRateForm.rateType == rt}">normal</option>
+                            </select>
+                        </div>
+                        <div class="product-form__field">
+                            <label for="sr-delivery-type">Delivery method</label>
+                            <select id="sr-delivery-type" name="deliveryTypes" required>
+                                <option th:each="dt : ${deliveryTypes}"
+                                        th:value="${dt.name()}"
+                                        th:text="${dt.name()}"
+                                        th:selected="${shippingRateForm != null and shippingRateForm.deliveryTypes == dt}">courier</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="product-form__row">
+                        <div class="product-form__field">
+                            <label for="sr-min-weight">Min weight</label>
+                            <input id="sr-min-weight" name="minWeight" type="number" min="0" step="0.01" required
+                                   th:value="${shippingRateForm != null ? shippingRateForm.minWeight : 0}"/>
+                        </div>
+                        <div class="product-form__field">
+                            <label for="sr-max-weight">Max weight</label>
+                            <input id="sr-max-weight" name="maxWeight" type="number" min="0" step="0.01" required
+                                   th:value="${shippingRateForm != null ? shippingRateForm.maxWeight : 0}"/>
+                        </div>
+                    </div>
+
+                    <div class="product-form__field">
+                        <label for="sr-price">Price (Rs.)</label>
+                        <input id="sr-price" name="price" type="number" min="0" step="0.01" required
+                               th:value="${shippingRateForm != null ? shippingRateForm.price : 0}"/>
+                    </div>
+                </section>
+            </div>
+
+            <footer class="dash-modal__footer">
+                <button type="button" class="btn btn--outline js-modal-close" data-modal="rate-form">Cancel</button>
+                <button type="submit" class="btn btn--primary js-rate-form-submit">Save rate</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<div id="rate-delete-modal" class="dash-modal" hidden aria-hidden="true">
+    <div class="dash-modal__backdrop js-modal-close" data-modal="rate-delete"></div>
+    <div class="dash-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rate-delete-modal-title">
+        <header class="dash-modal__header">
+            <h2 class="dash-modal__title" id="rate-delete-modal-title">Delete shipping rate?</h2>
+            <button type="button" class="dash-modal__close js-modal-close" data-modal="rate-delete" aria-label="Close">&times;</button>
+        </header>
+        <div class="dash-modal__body">
+            <p class="dash-modal__message">
+                Remove <strong class="js-delete-rate-label">this rate</strong>? This cannot be undone.
+            </p>
+        </div>
+        <form id="rate-delete-form" class="dash-modal__footer dash-modal__footer--split" method="post" action="">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="label" id="delete-rate-label" value=""/>
+            <button type="button" class="btn btn--outline js-modal-close" data-modal="rate-delete">Cancel</button>
+            <button type="submit" class="btn btn--soft">Delete</button>
+        </form>
+    </div>
+</div>
+
+<script th:src="@{/js/shipping-rates-admin.js}"></script>
+</body>
+</html>

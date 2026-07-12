@@ -9,10 +9,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ShippingRateTiersRepository extends JpaRepository<ShippingRateTiers, Long> {
+
+    List<ShippingRateTiers> findAllByOrderByIdAsc();
 
     @Query("SELECT s.price " +
             "FROM ShippingRateTiers s " +
