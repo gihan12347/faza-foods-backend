@@ -1,5 +1,7 @@
 package com.fasa.orders.dto;
 
+import com.fasa.orders.enums.DeliveryTypes;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 

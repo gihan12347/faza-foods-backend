@@ -37,6 +37,13 @@
                 Best seller
             </label>
         </div>
+        <div class="product-form__field product-form__field--checkbox">
+            <label>
+                <input id="pf-delivery-free" name="deliveryFree" type="checkbox" value="true"
+                       th:checked="${productForm != null and productForm.deliveryFree}"/>
+                Free delivery
+            </label>
+        </div>
     </section>
 
     <section class="product-form__section">

@@ -5,6 +5,8 @@ import com.fasa.orders.dto.ProductDto;
 import com.fasa.orders.dto.ProductListResponse;
 import com.fasa.orders.entity.ProductEntity;
 import com.fasa.orders.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -118,6 +120,7 @@ public class ProductService {
         entity.setPrice(dto.getPrice());
         entity.setOriginalPrice(dto.getOriginalPrice());
         entity.setBestSeller(dto.isBestSeller());
+        entity.setDeliveryFree(dto.isDeliveryFree());
         entity.setWeight(dto.getWeight());
         entity.setImage(dto.getImage());
         entity.setHowToUse(dto.getHowToUse());
@@ -140,6 +143,7 @@ public class ProductService {
         dto.setPrice(entity.getPrice());
         dto.setOriginalPrice(entity.getOriginalPrice());
         dto.setBestSeller(entity.isBestSeller());
+        dto.setDeliveryFree(entity.isDeliveryFree());
         dto.setWeight(entity.getWeight());
         dto.setImage(entity.getImage());
         dto.setHowToUse(nullToEmpty(entity.getHowToUse()));
@@ -160,6 +164,7 @@ public class ProductService {
         entity.setPrice(dto.getPrice());
         entity.setOriginalPrice(dto.getOriginalPrice());
         entity.setBestSeller(dto.isBestSeller());
+        entity.setDeliveryFree(dto.isDeliveryFree());
         entity.setWeight(dto.getWeight());
         entity.setImage(dto.getImage());
         entity.setHowToUse(dto.getHowToUse());

@@ -15,6 +15,7 @@ public class ProductForm {
     private BigDecimal price;
     private BigDecimal originalPrice;
     private boolean bestSeller;
+    private boolean deliveryFree;
     private String weight;
     private String image;
     private String howToUse;
@@ -33,6 +34,7 @@ public class ProductForm {
         form.setPrice(dto.getPrice());
         form.setOriginalPrice(dto.getOriginalPrice());
         form.setBestSeller(dto.isBestSeller());
+        form.setDeliveryFree(dto.isDeliveryFree());
         form.setWeight(dto.getWeight());
         form.setImage(dto.getImage());
         form.setHowToUse(dto.getHowToUse());
@@ -63,6 +65,7 @@ public class ProductForm {
         dto.setPrice(price);
         dto.setOriginalPrice(originalPrice);
         dto.setBestSeller(bestSeller);
+        dto.setDeliveryFree(deliveryFree);
         dto.setWeight(trim(weight));
         dto.setImage(trim(image));
         dto.setHowToUse(howToUse != null ? howToUse : "");
@@ -160,6 +163,14 @@ public class ProductForm {
 
     public void setBestSeller(boolean bestSeller) {
         this.bestSeller = bestSeller;
+    }
+
+    public boolean isDeliveryFree() {
+        return deliveryFree;
+    }
+
+    public void setDeliveryFree(boolean deliveryFree) {
+        this.deliveryFree = deliveryFree;
     }
 
     public String getWeight() {

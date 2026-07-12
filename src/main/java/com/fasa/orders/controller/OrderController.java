@@ -1,12 +1,11 @@
 package com.fasa.orders.controller;
 
-import com.fasa.orders.dto.OrderRequest;
-import com.fasa.orders.dto.OrderResponse;
-import com.fasa.orders.dto.PublicOrderStatusResponse;
+import com.fasa.orders.dto.*;
 import com.fasa.orders.entity.OrderEntity;
 import com.fasa.orders.service.ApplicationParameterService;
 import com.fasa.orders.service.OrderReceiptPdfService;
 import com.fasa.orders.service.OrderService;
+import com.fasa.orders.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static com.fasa.orders.constants.Constant.*;
 
 @RestController
 @Validated
@@ -46,6 +50,38 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<OrderResponse> health() {
         return ResponseEntity.ok(new OrderResponse("OK", "Order API is running"));
+    }
+
+    @PostMapping("/cart/summary")
+    public Map<String, BigDecimal> previewOrderPrice(@Valid @RequestBody OrderRequest request) {
+
+        BigDecimal subTotal = BigDecimal.ZERO;
+        double totalWeight = 0.0;
+        boolean isDeliveryFreeItemAvailable = false;
+
+        for (OrderItemRequest item : request.getItems()) {
+            int quantity = item.getQuantity();
+            if (item.isDeliveryFree()) {
+                isDeliveryFreeItemAvailable = true;
+            }
+            subTotal = subTotal.add(
+                    item.getPrice().multiply(BigDecimal.valueOf(quantity))
+            );
+            totalWeight += Utils.parseWeightToKg(item.getWeight()) * quantity;
+        }
+
+        DeliveryDetailsRequest delivery = request.getDeliveryDetails();
+        BigDecimal shipping = orderService.getShippingPriceByWeight(
+                totalWeight,
+                delivery.getDeliveryType(),
+                delivery.getDistrict(), isDeliveryFreeItemAvailable);
+
+        Map<String, BigDecimal> summary = new LinkedHashMap<>();
+        summary.put(SUB_TOTAL, subTotal);
+        summary.put(SHIPPING, shipping);
+        summary.put(TOTAL, subTotal.add(shipping));
+
+        return summary;
     }
 
     @PostMapping

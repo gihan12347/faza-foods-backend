@@ -13,12 +13,10 @@ public class OrderRequest {
     private String placedAt;
 
     /** Subtotal of line items (before delivery). */
-    @NotNull
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal orderPrice;
 
     /** Shipping / delivery fee. */
-    @NotNull
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal deliveryPrice;
 

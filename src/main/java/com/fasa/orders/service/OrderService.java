@@ -5,9 +5,13 @@ import com.fasa.orders.entity.OrderEntity;
 import com.fasa.orders.entity.OrderItemEntity;
 import com.fasa.orders.entity.OrderStatus;
 import com.fasa.orders.entity.ProductEntity;
+import com.fasa.orders.enums.DeliveryTypes;
+import com.fasa.orders.enums.RateTypes;
 import com.fasa.orders.repository.OrderRepository;
 import com.fasa.orders.repository.OrderSpecifications;
 import com.fasa.orders.repository.ProductRepository;
+import com.fasa.orders.repository.ShippingRateTiersRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,10 +23,11 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+
+import static com.fasa.orders.utils.Utils.deliveryTypeFromString;
 
 @Service
 public class OrderService {
@@ -32,10 +37,19 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final ShippingRateTiersRepository shippingRateTiersRepository;
+    private static final Set<String> SPECIAL_RATE_DISTRICTS = new HashSet<>(Arrays.asList(
+            "ampara",
+            "anuradhapura",
+            "batticaloa",
+            "trincomalee",
+            "jaffna"
+    ));
 
-    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository, ShippingRateTiersRepository shippingRateTiersRepository) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.shippingRateTiersRepository = shippingRateTiersRepository;
     }
 
     /**
@@ -161,7 +175,7 @@ public class OrderService {
     }
 
     private ProductEntity getProductWithUpdateInventory(OrderItemRequest itemRequest) {
-        Optional<ProductEntity> productEntity = productRepository.findByNameAndId(itemRequest.getName(), itemRequest.getId());
+        Optional<ProductEntity> productEntity = getProductByNameAndId(itemRequest.getName(), itemRequest.getId());
         if (productEntity.isPresent()) {
             ProductEntity product = productEntity.get();
             product.setCurrentStock(product.getCurrentStock() - itemRequest.getQuantity());
@@ -227,4 +241,30 @@ public class OrderService {
             }
         }
     }
+
+    public Optional<ProductEntity> getProductByNameAndId(String name, Long id) {
+        return productRepository.findByNameAndId(name, id);
+    }
+
+    // note : shipping offers are available for courier type only
+    public BigDecimal getShippingPriceByWeight(Double weight, String deliveryType,
+                                                    String district, boolean isDeliveryFreeItemAvailable) {
+        RateTypes rateType = isDeliveryFreeItemAvailable && DeliveryTypes.courier.name().equals(deliveryType.toLowerCase())
+                ? RateTypes.offer
+                : (SPECIAL_RATE_DISTRICTS.contains(district.toLowerCase())
+                ? RateTypes.special
+                : RateTypes.normal);
+        return getShippingPriceByWeight(rateType, deliveryTypeFromString(deliveryType), weight);
+    }
+
+    @Cacheable(
+            value = "shippingRatePrice",
+            key = "#rateType.name() + '_' + #deliveryType.name() + '_' + #weight.toPlainString()"
+    )
+   public BigDecimal getShippingPriceByWeight(RateTypes rateType,
+                                              DeliveryTypes deliveryType,
+                                              Double weight) {
+             return shippingRateTiersRepository.findPrice(rateType, deliveryType, weight)
+                    .orElseThrow(() -> new IllegalArgumentException("Shipping rate not found"));
+   }
 }

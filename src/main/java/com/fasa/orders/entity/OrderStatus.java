@@ -1,6 +1,7 @@
 package com.fasa.orders.entity;
 
 public enum OrderStatus {
+    NEW,
     PENDING,
     PROCESSING,
     DELIVERED,
@@ -9,6 +10,8 @@ public enum OrderStatus {
 
     public String getLabel() {
         switch (this) {
+            case NEW:
+                return "new order";
             case PROCESSING:
                 return "Processing";
             case DELIVERED:

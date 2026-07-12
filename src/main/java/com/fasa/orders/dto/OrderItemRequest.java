@@ -1,5 +1,7 @@
 package com.fasa.orders.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -22,6 +24,9 @@ public class OrderItemRequest {
     private Integer quantity;
 
     private String weight;
+
+    @JsonProperty("isDeliveryFree")
+    private boolean deliveryFree;
 
     public Long getId() {
         return id;
@@ -61,5 +66,15 @@ public class OrderItemRequest {
 
     public void setWeight(String weight) {
         this.weight = weight;
+    }
+
+    @JsonProperty("isDeliveryFree")
+    public boolean isDeliveryFree() {
+        return deliveryFree;
+    }
+
+    @JsonProperty("isDeliveryFree")
+    public void setDeliveryFree(boolean deliveryFree) {
+        this.deliveryFree = deliveryFree;
     }
 }

@@ -23,6 +23,7 @@
         category: document.getElementById('pf-category'),
         description: document.getElementById('pf-description'),
         bestSeller: document.getElementById('pf-best-seller'),
+        deliveryFree: document.getElementById('pf-delivery-free'),
         price: document.getElementById('pf-price'),
         originalPrice: document.getElementById('pf-original-price'),
         currentStock: document.getElementById('pf-current-stock'),
@@ -108,6 +109,7 @@
         if (fields.category) fields.category.value = data.category || '';
         if (fields.description) fields.description.value = data.description || '';
         if (fields.bestSeller) fields.bestSeller.checked = !!data.bestSeller;
+        if (fields.deliveryFree) fields.deliveryFree.checked = !!data.deliveryFree;
         if (fields.price) fields.price.value = data.price != null ? data.price : 0;
         if (fields.originalPrice) fields.originalPrice.value = data.originalPrice != null ? data.originalPrice : 0;
         if (fields.currentStock) fields.currentStock.value = data.currentStock != null ? data.currentStock : 0;
@@ -128,6 +130,7 @@
             price: 0,
             originalPrice: 0,
             bestSeller: false,
+            deliveryFree: false,
             weight: '',
             image: '',
             howToUse: '',

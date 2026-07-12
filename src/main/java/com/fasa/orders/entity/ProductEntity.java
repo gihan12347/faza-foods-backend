@@ -34,6 +34,9 @@ public class ProductEntity {
     @Column(name = "is_best_seller", nullable = false)
     private boolean bestSeller;
 
+    @Column(name = "is_delivery_free", nullable = false)
+    private boolean deliveryFree;
+
     @Column(length = 40)
     private String weight;
 
@@ -116,6 +119,14 @@ public class ProductEntity {
 
     public void setBestSeller(boolean bestSeller) {
         this.bestSeller = bestSeller;
+    }
+
+    public boolean isDeliveryFree() {
+        return deliveryFree;
+    }
+
+    public void setDeliveryFree(boolean deliveryFree) {
+        this.deliveryFree = deliveryFree;
     }
 
     public String getWeight() {

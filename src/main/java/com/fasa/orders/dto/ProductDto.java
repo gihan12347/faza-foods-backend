@@ -20,6 +20,9 @@ public class ProductDto {
     @JsonProperty("isBestSeller")
     private boolean bestSeller;
 
+    @JsonProperty("isDeliveryFree")
+    private boolean deliveryFree;
+
     private String weight;
     private String image;
     private String howToUse;
@@ -81,6 +84,16 @@ public class ProductDto {
     @JsonProperty("isBestSeller")
     public void setBestSeller(boolean bestSeller) {
         this.bestSeller = bestSeller;
+    }
+
+    @JsonProperty("isDeliveryFree")
+    public boolean isDeliveryFree() {
+        return deliveryFree;
+    }
+
+    @JsonProperty("isDeliveryFree")
+    public void setDeliveryFree(boolean deliveryFree) {
+        this.deliveryFree = deliveryFree;
     }
 
     public String getWeight() {
