@@ -257,10 +257,10 @@ public class OrderService {
         return getShippingPriceByWeight(rateType, deliveryTypeFromString(deliveryType), weight);
     }
 
-    @Cacheable(
-            value = "shippingRatePrice",
-            key = "#rateType.name() + '_' + #deliveryType.name() + '_' + #weight.toPlainString()"
-    )
+//    @Cacheable(
+//            value = "shippingRatePrice",
+//            key = "#rateType.name() + '_' + #deliveryType.name() + '_' + #weight.toPlainString()"
+//    )
    public BigDecimal getShippingPriceByWeight(RateTypes rateType,
                                               DeliveryTypes deliveryType,
                                               Double weight) {
