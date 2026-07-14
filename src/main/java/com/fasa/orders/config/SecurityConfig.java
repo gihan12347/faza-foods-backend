@@ -51,7 +51,7 @@ public class SecurityConfig {
                     .antMatchers("/api/orders/**", "/api/products/**", "/health/**", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                     .antMatchers(HttpMethod.POST, "/users/create").hasRole("ADMIN")
                     .antMatchers(HttpMethod.GET, "/products").hasRole("ADMIN")
-                    .antMatchers("/shipping-rates", "/shipping-rates/**").hasRole("ADMIN")
+                    .antMatchers("/shipping-rates", "/shipping-rates/**").hasRole("SUPER_ADMIN")
                     .anyRequest().authenticated()
                 .and()
                 .formLogin()

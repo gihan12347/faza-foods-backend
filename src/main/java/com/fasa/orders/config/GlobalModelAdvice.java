@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static com.fasa.orders.controller.UserAdminController.isAdmin;
+import java.util.List;
+
+import static com.fasa.orders.controller.UserAdminController.getRoles;
 
 @ControllerAdvice
 public class GlobalModelAdvice {
@@ -17,8 +19,10 @@ public class GlobalModelAdvice {
     public void exposeCsrf(HttpServletRequest request, Model model, Authentication authentication) {
         CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
         if (token != null) {
-            boolean admin = isAdmin(authentication);
-            model.addAttribute("isAdmin", admin);
+            List <String> roles = getRoles(authentication);
+            model.addAttribute("isAdmin", roles.contains("ROLE_ADMIN"));
+            model.addAttribute("isSuperAdmin", roles.contains("ROLE_SUPER_ADMIN")
+                                                    && roles.contains("ROLE_ADMIN"));
             model.addAttribute("_csrf", token);
         }
     }

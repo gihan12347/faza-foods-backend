@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 public class UserAdminController {
 
@@ -64,15 +67,15 @@ public class UserAdminController {
         return "redirect:/users";
     }
 
-    public static boolean isAdmin(Authentication authentication) {
+    //TODO: need to implement multiple role support feature
+    public static List<String> getRoles(Authentication authentication) {
+        List<String> roles = new ArrayList<>();
         if (authentication == null) {
-            return false;
+            return roles;
         }
         for (GrantedAuthority authority : authentication.getAuthorities()) {
-            if ("ROLE_ADMIN".equals(authority.getAuthority())) {
-                return true;
-            }
+            roles.add(authority.getAuthority());
         }
-        return false;
+        return roles;
     }
 }

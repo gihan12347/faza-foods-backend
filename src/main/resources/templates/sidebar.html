@@ -11,7 +11,7 @@
         <a th:href="@{/dashboard(status='DONE')}" class="sidebar__link" th:classappend="${active} == 'done' ? ' is-active' : ''">Done orders</a>
         <a th:href="@{/dashboard(status='REJECT')}" class="sidebar__link" th:classappend="${active} == 'reject' ? ' is-active' : ''">Reject orders</a>
         <a th:if="${isAdmin}" th:href="@{/products}" class="sidebar__link" th:classappend="${active} == 'products' ? ' is-active' : ''">Products</a>
-        <a th:if="${isAdmin}" th:href="@{/shipping-rates}" class="sidebar__link" th:classappend="${active} == 'shipping-rates' ? ' is-active' : ''">Shipping rates</a>
+        <a th:if="${isSuperAdmin}" th:href="@{/shipping-rates}" class="sidebar__link" th:classappend="${active} == 'shipping-rates' ? ' is-active' : ''">Shipping rates</a>
         <a th:href="@{/users}" class="sidebar__link" th:classappend="${active} == 'users' ? ' is-active' : ''">User management</a>
     </nav>
 </aside>
