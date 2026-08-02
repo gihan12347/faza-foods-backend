@@ -2,16 +2,17 @@ package com.fasa.orders.controller;
 
 import com.fasa.orders.dto.*;
 import com.fasa.orders.entity.OrderEntity;
+import com.fasa.orders.entity.OrderResponseStatus;
 import com.fasa.orders.service.ApplicationParameterService;
 import com.fasa.orders.service.OrderReceiptPdfService;
 import com.fasa.orders.service.OrderService;
-import com.fasa.orders.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,43 +54,37 @@ public class OrderController {
         return ResponseEntity.ok(new OrderResponse("OK", "Order API is running"));
     }
 
-    @PostMapping("/cart/summary")
-    public Map<String, BigDecimal> previewOrderPrice(@Valid @RequestBody OrderRequest request) {
-
-        BigDecimal subTotal = BigDecimal.ZERO;
-        double totalWeight = 0.0;
-        boolean isDeliveryFreeItemAvailable = false;
-
-        for (OrderItemRequest item : request.getItems()) {
-            int quantity = item.getQuantity();
-            if (item.isDeliveryFree()) {
-                isDeliveryFreeItemAvailable = true;
-            }
-            subTotal = subTotal.add(
-                    item.getPrice().multiply(BigDecimal.valueOf(quantity))
-            );
-            totalWeight += Utils.parseWeightToKg(item.getWeight()) * quantity;
+    @PostMapping("/cart-summary")
+    public ResponseEntity<?> previewOrderPrice(
+            @Valid @RequestBody OrderRequest request,
+            Errors errors) {
+        if (errors.hasErrors()) {
+            Map<String, String> validationErrors = new HashMap<>();
+            errors.getFieldErrors().forEach(error ->
+                    validationErrors.put(error.getField(), error.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(validationErrors);
         }
-
-        DeliveryDetailsRequest delivery = request.getDeliveryDetails();
-        BigDecimal shipping = orderService.getShippingPriceByWeight(
-                totalWeight,
-                delivery.getDeliveryType(),
-                delivery.getDistrict(), isDeliveryFreeItemAvailable);
-
-        Map<String, BigDecimal> summary = new LinkedHashMap<>();
-        summary.put(SUB_TOTAL, subTotal);
-        summary.put(SHIPPING, shipping);
-        summary.put(TOTAL, subTotal.add(shipping));
-
-        return summary;
+        Map<String, BigDecimal> summary =
+                orderService.getPriceSummeryAndSaveItemsInToOderIfOrderNotNull(request, null);
+        return ResponseEntity.ok(summary);
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request,
+        Errors errors) {
+        if (errors.hasErrors()) {
+            Map<String, String> validationErrors = new HashMap<>();
+            errors.getFieldErrors().forEach(error ->
+                    validationErrors.put(error.getField(), error.getDefaultMessage()));
+            OrderResponse response = new OrderResponse(
+                    OrderResponseStatus.FAIL.name(),
+                    OrderResponseStatus.FAIL.getMessage());
+            response.setValidationErrors(validationErrors);
+            return ResponseEntity.badRequest().body(response);
+        }
         OrderEntity savedOrder = orderService.saveOrder(request);
-        String message = "Order submitted successfully & we will notify you soon. Your Order ID: " + savedOrder.getId();
-        OrderResponse body = new OrderResponse("SUCCESS", message);
+        String message = OrderResponseStatus.SUCCESS.getMessage() + savedOrder.getId();
+        OrderResponse body = new OrderResponse(OrderResponseStatus.SUCCESS.name(), message);
         body.setOrderId(savedOrder.getId());
         body.setDownloadUrl(applicationParameterService.getStorePublicBaseUrl() + "/download/" + savedOrder.getId());
         return ResponseEntity.ok(body);

@@ -16,17 +16,8 @@ public class OrderItemRequest {
     private String name;
 
     @NotNull
-    @Min(0)
-    private BigDecimal price;
-
-    @NotNull
     @Min(1)
     private Integer quantity;
-
-    private String weight;
-
-    @JsonProperty("isDeliveryFree")
-    private boolean deliveryFree;
 
     public Long getId() {
         return id;
@@ -44,14 +35,6 @@ public class OrderItemRequest {
         this.name = name;
     }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
     public Integer getQuantity() {
         return quantity;
     }
@@ -60,21 +43,4 @@ public class OrderItemRequest {
         this.quantity = quantity;
     }
 
-    public String getWeight() {
-        return weight;
-    }
-
-    public void setWeight(String weight) {
-        this.weight = weight;
-    }
-
-    @JsonProperty("isDeliveryFree")
-    public boolean isDeliveryFree() {
-        return deliveryFree;
-    }
-
-    @JsonProperty("isDeliveryFree")
-    public void setDeliveryFree(boolean deliveryFree) {
-        this.deliveryFree = deliveryFree;
-    }
 }

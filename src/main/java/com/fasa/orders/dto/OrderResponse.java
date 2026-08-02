@@ -1,11 +1,14 @@
 package com.fasa.orders.dto;
 
+import java.util.Map;
+
 public class OrderResponse {
 
     private String status;
     private String message;
     private Long orderId;
     private String downloadUrl;
+    private Map<String, String> validationErrors;
 
     public OrderResponse(String status, String message) {
         this.status = status;
@@ -39,4 +42,12 @@ public class OrderResponse {
     public String getDownloadUrl() { return downloadUrl; }
 
     public void setDownloadUrl(String downloadUrl) { this.downloadUrl = downloadUrl; }
+
+    public Map<String, String> getValidationErrors() {
+        return validationErrors;
+    }
+
+    public void setValidationErrors(Map<String, String> validationErrors) {
+        this.validationErrors = validationErrors;
+    }
 }

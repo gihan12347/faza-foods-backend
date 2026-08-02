@@ -11,7 +11,7 @@ import com.fasa.orders.repository.OrderRepository;
 import com.fasa.orders.repository.OrderSpecifications;
 import com.fasa.orders.repository.ProductRepository;
 import com.fasa.orders.repository.ShippingRateTiersRepository;
-import org.springframework.cache.annotation.Cacheable;
+import com.fasa.orders.utils.Utils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static com.fasa.orders.constants.Constant.*;
 import static com.fasa.orders.utils.Utils.deliveryTypeFromString;
 
 @Service
@@ -139,15 +140,6 @@ public class OrderService {
         order.setPlacedAt(request.getPlacedAt());
         order.setStatus(OrderStatus.PENDING);
 
-        BigDecimal orderPrice = request.getOrderPrice() != null
-                ? request.getOrderPrice().setScale(2, RoundingMode.HALF_UP)
-                : sumItemsSubtotal(request);
-        BigDecimal deliveryPrice = request.getDeliveryPrice() != null
-                ? request.getDeliveryPrice().setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        order.setOrderPrice(orderPrice);
-        order.setDeliveryPrice(deliveryPrice);
-
         DeliveryDetailsRequest details = request.getDeliveryDetails();
         if (details != null) {
             order.setCustomerName(details.getCustomerName());
@@ -159,30 +151,16 @@ public class OrderService {
             order.setOtherPhoneNumber(details.getOtherPhoneNumber());
         }
 
-        for (OrderItemRequest itemRequest : request.getItems()) {
-            ProductEntity product = getProductWithUpdateInventory(itemRequest);
-            if (product != null) {
-                OrderItemEntity item = new OrderItemEntity();
-                item.setProductId(product.getId());
-                item.setName(product.getName());
-                item.setPrice(product.getPrice());
-                item.setQuantity(itemRequest.getQuantity());
-                item.setWeight(itemRequest.getWeight());
-                order.addItem(item);
-            }
-        }
+        Map<String, BigDecimal> summary = getPriceSummeryAndSaveItemsInToOderIfOrderNotNull(request, order);
+        order.setOrderPrice(summary.get(SUB_TOTAL));
+        order.setDeliveryPrice(summary.get(SHIPPING));
         return orderRepository.saveAndFlush(order);
     }
 
-    private ProductEntity getProductWithUpdateInventory(OrderItemRequest itemRequest) {
-        Optional<ProductEntity> productEntity = getProductByNameAndId(itemRequest.getName(), itemRequest.getId());
-        if (productEntity.isPresent()) {
-            ProductEntity product = productEntity.get();
-            product.setCurrentStock(product.getCurrentStock() - itemRequest.getQuantity());
-            productRepository.saveAndFlush(product);
-            return product;
-        }
-        return null;
+    private ProductEntity getProductWithUpdateInventory(ProductEntity product, Integer quantity) {
+        product.setCurrentStock(product.getCurrentStock() - quantity);
+        productRepository.saveAndFlush(product);
+        return product;
     }
 
     //TODO : need to implement better encrypt method
@@ -196,20 +174,50 @@ public class OrderService {
         throw new IllegalStateException("Unable to allocate a unique order ID. Please retry.");
     }
 
-    private static BigDecimal sumItemsSubtotal(OrderRequest request) {
-        BigDecimal sum = BigDecimal.ZERO;
-        if (request.getItems() == null) {
-            return sum.setScale(2, RoundingMode.HALF_UP);
-        }
-        for (OrderItemRequest line : request.getItems()) {
-            if (line.getPrice() == null) {
-                continue;
+    public Map<String, BigDecimal> getPriceSummeryAndSaveItemsInToOderIfOrderNotNull(OrderRequest request, OrderEntity order) {
+        Map<String, BigDecimal> summary = new LinkedHashMap<>();
+        BigDecimal subTotal = BigDecimal.ZERO;
+        double totalWeight = 0.0;
+        boolean isDeliveryFreeItemAvailable = false;
+
+        for (OrderItemRequest item : request.getItems()) {
+            Optional<ProductEntity> ProductEntity = getProductByNameAndId(item.getName(), item.getId());
+            if (ProductEntity.isPresent()) {
+                ProductEntity product = ProductEntity.get();
+                int quantity = item.getQuantity();
+                if (product.isDeliveryFree()) {
+                    isDeliveryFreeItemAvailable = true;
+                }
+                subTotal = subTotal.add(
+                        product.getPrice().multiply(BigDecimal.valueOf(quantity))
+                );
+                totalWeight += Utils.parseWeightToKg(product.getWeight()) * quantity;
+                if (order != null) {
+                    addItemsToOrder(product, item, order);
+                }
             }
-            int qty = line.getQuantity() == null ? 1 : Math.max(1, line.getQuantity());
-            BigDecimal lineTotal = line.getPrice().multiply(BigDecimal.valueOf(qty));
-            sum = sum.add(lineTotal);
         }
-        return sum.setScale(2, RoundingMode.HALF_UP);
+
+        DeliveryDetailsRequest delivery = request.getDeliveryDetails();
+        BigDecimal shipping = getShippingPriceByWeight(
+                totalWeight,
+                delivery.getDeliveryType(),
+                delivery.getDistrict(), isDeliveryFreeItemAvailable);
+        summary.put(SUB_TOTAL, subTotal.setScale(2, RoundingMode.HALF_UP));
+        summary.put(SHIPPING, shipping.setScale(2, RoundingMode.HALF_UP));
+        summary.put(TOTAL, subTotal.add(shipping).setScale(2, RoundingMode.HALF_UP));
+        return summary;
+    }
+
+    private void addItemsToOrder(ProductEntity productEntity, OrderItemRequest itemRequest, OrderEntity order) {
+        ProductEntity product = getProductWithUpdateInventory(productEntity, itemRequest.getQuantity());
+        OrderItemEntity item = new OrderItemEntity();
+        item.setProductId(product.getId());
+        item.setName(product.getName());
+        item.setPrice(product.getPrice());
+        item.setQuantity(itemRequest.getQuantity());
+        item.setWeight(product.getWeight());
+        order.addItem(item);
     }
 
     @Transactional

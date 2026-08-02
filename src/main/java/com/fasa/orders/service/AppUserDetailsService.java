@@ -1,7 +1,6 @@
 package com.fasa.orders.service;
 
 import com.fasa.orders.entity.AppUserEntity;
-import com.fasa.orders.repository.AppUserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

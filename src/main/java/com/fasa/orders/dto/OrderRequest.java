@@ -11,19 +11,9 @@ public class OrderRequest {
 
     private String orderSource;
     private String placedAt;
-
-    /** Subtotal of line items (before delivery). */
-    @DecimalMin(value = "0.0", inclusive = true)
-    private BigDecimal orderPrice;
-
-    /** Shipping / delivery fee. */
-    @DecimalMin(value = "0.0", inclusive = true)
-    private BigDecimal deliveryPrice;
-
     @Valid
     @NotEmpty
     private List<OrderItemRequest> items;
-
     @Valid
     private DeliveryDetailsRequest deliveryDetails;
 
@@ -41,22 +31,6 @@ public class OrderRequest {
 
     public void setPlacedAt(String placedAt) {
         this.placedAt = placedAt;
-    }
-
-    public BigDecimal getOrderPrice() {
-        return orderPrice;
-    }
-
-    public void setOrderPrice(BigDecimal orderPrice) {
-        this.orderPrice = orderPrice;
-    }
-
-    public BigDecimal getDeliveryPrice() {
-        return deliveryPrice;
-    }
-
-    public void setDeliveryPrice(BigDecimal deliveryPrice) {
-        this.deliveryPrice = deliveryPrice;
     }
 
     public List<OrderItemRequest> getItems() {
